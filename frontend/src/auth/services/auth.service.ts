@@ -115,7 +115,7 @@ export class AuthService {
       handleCodeInApp: false,
     });
 
-    // Continue profile tasks in background.
+    //Continue profile tasks in background.
     Promise.allSettled([
       updateProfile(firebaseUser, { displayName: `${firstName} ${lastName}` }),
       this.createUserProfile(user),
