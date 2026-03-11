@@ -211,7 +211,7 @@ export class AuthService {
       return false;
     }
 
-    // Reload user to get latest verification status
+    //Reload user to get latest verification status
     await firebaseUser.reload();
     
     // Update Firestore if verification status changed
