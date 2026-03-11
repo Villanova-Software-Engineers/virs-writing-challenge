@@ -1,12 +1,25 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from typing import Any, Dict, List, Optional
+from datetime import datetime
 
-class Message(BaseModel):
+
+class MessageBase(BaseModel):
     author: str
-    id: int
     content: str
-    timestamp: str| None = None
-    reply_to_id: int | None = None
+    reply_to_id: Optional[int] = None
 
-class MessageCreate(Message):
-    pass
 
+class MessageCreate(MessageBase):
+    timestamp: str
+
+
+class MessageUpdate(BaseModel):
+    content: Optional[str] = None
+
+
+class MessageResponse(MessageBase):
+    id: int
+    updated_at: Optional[datetime]
+
+
+    model_config = ConfigDict(from_attributes=True)
