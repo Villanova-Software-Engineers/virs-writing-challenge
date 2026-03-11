@@ -43,35 +43,42 @@ export class AuthService {
     const { email, password } = credentials;
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
-    await firebaseUser.reload();
 
-    // Check if email is verified
+    // Check if email is verified (already available from signIn, no reload needed)
     if (!firebaseUser.emailVerified) {
       await firebaseSignOut(auth);
       throw new Error('Please verify your email before signing in. Check your inbox for the verification link.');
     }
 
-    let userProfile: User | null = null;
-    try {
-      userProfile = await this.getUserProfile(firebaseUser.uid);
-    } catch (error) {
+    // Start profile fetch but don't block sign-in on it
+    const profilePromise = this.getUserProfile(firebaseUser.uid).catch((error) => {
       console.warn('[AuthService] Firestore profile read failed during sign-in, using fallback profile:', error);
-    }
+      return null;
+    });
+
+    // Race: use profile if it resolves quickly, otherwise use fallback
+    let userProfile: User | null = null;
+    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000));
+    userProfile = await Promise.race([profilePromise, timeout]);
 
     if (!userProfile) {
       userProfile = this.buildFallbackUser(firebaseUser);
-      // Best-effort profile backfill for users missing docs.
-      this.createUserProfile({
-        id: userProfile.id,
-        email: userProfile.email,
-        firstName: userProfile.firstName,
-        lastName: userProfile.lastName,
-        department: userProfile.department,
-        firebase_uid: userProfile.firebase_uid,
-        isAdmin: false,
-        emailVerified: firebaseUser.emailVerified,
-      }).catch((error) => {
-        console.warn('[AuthService] Firestore profile backfill failed:', error);
+      // Continue fetching profile in background for backfill if needed
+      profilePromise.then((profile) => {
+        if (!profile) {
+          this.createUserProfile({
+            id: userProfile!.id,
+            email: userProfile!.email,
+            firstName: userProfile!.firstName,
+            lastName: userProfile!.lastName,
+            department: userProfile!.department,
+            firebase_uid: userProfile!.firebase_uid,
+            isAdmin: false,
+            emailVerified: firebaseUser.emailVerified,
+          }).catch((error) => {
+            console.warn('[AuthService] Firestore profile backfill failed:', error);
+          });
+        }
       });
     }
 
@@ -108,7 +115,7 @@ export class AuthService {
       handleCodeInApp: false,
     });
 
-    // Continue profile tasks in background.
+    //Continue profile tasks in background.
     Promise.allSettled([
       updateProfile(firebaseUser, { displayName: `${firstName} ${lastName}` }),
       this.createUserProfile(user),
@@ -204,7 +211,7 @@ export class AuthService {
       return false;
     }
 
-    // Reload user to get latest verification status
+    //Reload user to get latest verification status
     await firebaseUser.reload();
     
     // Update Firestore if verification status changed
