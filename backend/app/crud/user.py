@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm.session import Session
 from ..models import User
 from ..schemas import UserCreate
 from firebase_admin import auth

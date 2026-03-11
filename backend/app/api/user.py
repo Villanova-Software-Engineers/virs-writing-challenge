@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import List
 
+
 from ..core import get_db, limiter
 from ..crud import user as user_crud
 from ..schemas import UserCreate, UserUpdate, UserResponse
