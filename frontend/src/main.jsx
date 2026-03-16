@@ -4,10 +4,11 @@ import './index.css'
 import App from './App.jsx'
 import { ThemeProvider } from './context/ThemeContext'
 
+// Try this temporarily to see if the blank screen goes away
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ThemeProvider>
+    {/* <ThemeProvider> */}
       <App />
-    </ThemeProvider>
+    {/* </ThemeProvider> */}
   </StrictMode>,
 )

@@ -17,6 +17,7 @@ backend/firebase.json
 # Python
 __pycache__/
 *.py[cod]
+.venv/
 
 # Logs
 npm-debug.log*
