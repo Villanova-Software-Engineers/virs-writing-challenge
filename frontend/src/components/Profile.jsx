@@ -1,130 +1,185 @@
 import { useState, useEffect } from "react";
 import { useStreak } from "../context/StreakContext";
 
-function Profile() {
-  // Streak is managed globally via StreakContext
-  const { streak, isLoading: streakLoading } = useStreak();
-  const [semester, setSemester] = useState(null);
-  const [sessions, setSessions] = useState([]);
+function formatMinutes(minutes) {
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+}
+
+const mockSemesters = [
+  {
+    id: 1,
+    name: "Fall 2024",
+    totalMinutes: 1234,
+    longestStreak: 7,
+    activeDays: 24,
+  },
+  {
+    id: 2,
+    name: "Spring 2025",
+    totalMinutes: 980,
+    longestStreak: 10,
+    activeDays: 18,
+  },
+  {
+    id: 3,
+    name: "Fall 2025",
+    totalMinutes: 1520,
+    longestStreak: 14,
+    activeDays: 30,
+  },
+];
+
+function ProfileUI() {
+  const [editing, setEditing] = useState(false);
+  const [profile, setProfile] = useState({
+    first_name: "",
+    last_name: "",
+    department: "",
+  });
+
+  const [semesters, setSemesters] = useState(mockSemesters);
 
   useEffect(() => {
-    // TODO: GET /semester/current → setSemester({ name, startDate, endDate })
-    // TODO: GET /sessions        → setSessions([...]) — fetch user's session history
-
-    const saved = JSON.parse(localStorage.getItem("writingSessions") || "[]");
-    setSessions(saved);
+    try {
+      const stored = localStorage.getItem("profile");
+      if (stored) setProfile(JSON.parse(stored));
+      else
+        setProfile({ first_name: "Jane", last_name: "Doe", department: "English" });
+    } catch (e) {
+      setProfile({ first_name: "Jane", last_name: "Doe", department: "English" });
+    }
   }, []);
 
-  const formatTime = (totalSeconds) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  };
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setProfile((p) => ({ ...p, [name]: value }));
+  }
 
-  const totalTime = sessions.reduce((sum, s) => sum + s.duration, 0);
-  const activeDays = sessions.length;
+  function handleSave() {
+    localStorage.setItem("profile", JSON.stringify(profile));
+    setEditing(false);
+  }
+
+  const current = semesters[semesters.length - 1];
 
   return (
-    <div className="p-8">
-      <h1 className="text-4xl font-bold text-text mb-8">Profile</h1>
-
-      {/* User Info */}
-      <div className="bg-background rounded-xl shadow p-8 mb-8">
-        <h2 className="text-sm font-semibold text-muted uppercase tracking-wide mb-6">
-          Account Info
-        </h2>
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <label className="text-sm text-muted">Name</label>
-            <p className="text-lg text-text font-medium mt-1">Mock User</p>
-          </div>
-          <div>
-            <label className="text-sm text-muted">Department</label>
-            <p className="text-lg text-text font-medium mt-1">
-              Computer Science
-            </p>
-          </div>
-          <div>
-            <label className="text-sm text-muted">Email</label>
-            <p className="text-lg text-text font-medium mt-1">
-              user@villanova.edu
-            </p>
-          </div>
-          <div>
-            <label className="text-sm text-muted">Semester</label>
-            <p className="text-lg text-text font-medium mt-1">
-              {semester?.name || "\u2014"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Current Semester Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-        <div className="bg-background rounded-xl shadow p-6">
-          <div className="text-sm font-semibold text-muted uppercase tracking-wide mb-2">
-            Total Time
-          </div>
-          <div className="text-2xl font-bold text-text font-mono">
-            {formatTime(totalTime)}
-          </div>
-        </div>
-        <div className="bg-background rounded-xl shadow p-6">
-          <div className="text-sm font-semibold text-muted uppercase tracking-wide mb-2">
-            Current Streak
-          </div>
-          <div className="text-2xl font-bold text-text">
-            {streakLoading
-              ? "—"
-              : streak > 0
-                ? `${streak} day${streak !== 1 ? "s" : ""} 🔥`
-                : "0"}
-          </div>
-        </div>
-        <div className="bg-background rounded-xl shadow p-6">
-          <div className="text-sm font-semibold text-muted uppercase tracking-wide mb-2">
-            Active Days
-          </div>
-          <div className="text-2xl font-bold text-text">{activeDays}</div>
-        </div>
-      </div>
-
-      {/* Session History */}
-      <div className="bg-background rounded-xl shadow p-8">
-        <h2 className="text-sm font-semibold text-muted uppercase tracking-wide mb-6">
-          Session History
-        </h2>
-        {sessions.length === 0 ? (
-          <p className="text-base text-muted">No sessions recorded yet.</p>
-        ) : (
-          <div className="space-y-3">
-            {sessions
-              .slice()
-              .reverse()
-              .map((session, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-4 rounded-xl border border-accent/20"
+    <div className="flex flex-col min-h-screen py-8 px-4">
+      <section className="max-w-4xl mx-auto w-full">
+        <div className="bg-background rounded-xl shadow-lg p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-text">Profile</h2>
+            <div>
+              {!editing ? (
+                <button
+                  className="px-4 py-2 bg-primary text-background rounded-lg font-semibold"
+                  onClick={() => setEditing(true)}
                 >
-                  <div>
-                    <span className="text-base font-medium text-text">
-                      {session.date}
-                    </span>
-                    <span className="text-sm text-muted ml-4 italic">
-                      &ldquo;{session.description}&rdquo;
-                    </span>
-                  </div>
-                  <span className="text-base font-mono text-muted">
-                    {formatTime(session.duration)}
-                  </span>
+                  Edit
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <button
+                    className="px-4 py-2 bg-primary text-background rounded-lg font-semibold"
+                    onClick={handleSave}
+                  >
+                    Save
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-secondary text-text rounded-lg font-semibold"
+                    onClick={() => setEditing(false)}
+                  >
+                    Cancel
+                  </button>
                 </div>
-              ))}
+              )}
+            </div>
           </div>
-        )}
-      </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="col-span-1 md:col-span-1">
+              <div className="mb-4">
+                <label className="block text-sm text-muted mb-1">First name</label>
+                <input
+                  name="first_name"
+                  value={profile.first_name}
+                  onChange={handleChange}
+                  disabled={!editing}
+                  className={`w-full px-3 py-2 rounded-lg border ${editing ? "border-primary" : "border-transparent"} bg-input text-text`}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm text-muted mb-1">Last name</label>
+                <input
+                  name="last_name"
+                  value={profile.last_name}
+                  onChange={handleChange}
+                  disabled={!editing}
+                  className={`w-full px-3 py-2 rounded-lg border ${editing ? "border-primary" : "border-transparent"} bg-input text-text`}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-muted mb-1">Department</label>
+                <input
+                  name="department"
+                  value={profile.department}
+                  onChange={handleChange}
+                  disabled={!editing}
+                  className={`w-full px-3 py-2 rounded-lg border ${editing ? "border-primary" : "border-transparent"} bg-input text-text`}
+                />
+              </div>
+            </div>
+
+            <div className="col-span-1 md:col-span-2">
+              <h3 className="text-lg font-semibold text-text mb-3">Current Semester</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-background rounded-xl p-4 shadow-md text-center">
+                  <div className="text-sm text-muted">Total Time</div>
+                  <div className="text-2xl font-bold text-text mt-2">{formatMinutes(current.totalMinutes)}</div>
+                </div>
+
+                <div className="bg-background rounded-xl p-4 shadow-md text-center">
+                  <div className="text-sm text-muted">Longest Streak</div>
+                  <div className="text-2xl font-bold text-text mt-2">{current.longestStreak}d</div>
+                </div>
+
+                <div className="bg-background rounded-xl p-4 shadow-md text-center">
+                  <div className="text-sm text-muted">Active Days</div>
+                  <div className="text-2xl font-bold text-text mt-2">{current.activeDays}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold text-text mb-4">Historical Semesters</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {semesters
+                .slice()
+                .reverse()
+                .map((s) => (
+                  <div key={s.id} className="bg-background rounded-xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold text-text">{s.name}</div>
+                        <div className="text-sm text-muted">{formatMinutes(s.totalMinutes)} • {s.longestStreak}d streak</div>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <div className="text-sm text-muted">Active days</div>
+                      <div className="text-lg font-bold text-text">{s.activeDays}</div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
 
-export default Profile;
+export default ProfileUI;

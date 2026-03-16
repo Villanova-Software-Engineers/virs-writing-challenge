@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 const navItems = [
   {
-    to: "/",
+    to: "/dashboard",
     label: "Dashboard",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +62,7 @@ function NavBar() {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === "/"}
+            end={item.to === "/dashboard"}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-2.5 mx-1 rounded-lg transition-colors whitespace-nowrap ${
                 isActive

@@ -1,2 +1,24 @@
+# IDE/system
 .idea
 .DS_Store
+.vscode
+
+# Node
+node_modules/
+dist/
+build/
+
+# Env & secrets
+.env
+frontend/.env
+backend/.env
+backend/firebase.json
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

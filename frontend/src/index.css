@@ -1,22 +1,46 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 @theme {
-  --font-sans: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  --color-background: oklch(100.00% 0.000 89.88);
-  --color-primary: oklch(56.70% 0.155 248.52);
-  --color-secondary: oklch(81.80% 0.080 225.19);
-  --color-accent: oklch(73.87% 0.015 238.09);
-  --color-text: oklch(11.83% 0.046 280.65);
-  --color-muted: oklch(10.11% 0.000 89.88);
+  --font: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --color-background: var(--background);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
 }
 
 body {
-  @apply bg-gradient-to-br from-primary/50 via-neutral-100 to-primary/50 m-0 p-0;
+  @apply bg-gradient-to-br from-primary/50  via-neutral-100 to-primary/50
+}
+
+.dark body {
+  @apply bg-gradient-to-br from-background via-primary/40 to-background
 }
 
 input,
 textarea,
 select {
-  color: var(--color-text);
-  background-color: var(--color-secondary);
+  color: var(--text);
+  background-color: var(--background);
+}
+
+:root {
+  --background: oklch(100.00% 0.000 89.88);
+  --primary: oklch(56.70% 0.155 248.52);
+  --secondary: oklch(81.80% 0.080 225.19);
+  --accent: oklch(73.87% 0.015 238.09);
+  --text: oklch(11.83% 0.046 280.65);
+  --muted: oklch(10.11% 0.000 89.88);
+}
+
+.dark {
+  --background: oklch(0.00% 0.000 0);
+  --primary: oklch(71.97% 0.156 243.43);
+  --secondary: oklch(56.70% 0.155 248.52);
+  --accent: oklch(44.70% 0.013 228.40);
+  --text: oklch(100% 0.000 89.88);
+  --muted: oklch(94.04% 0.022 291.80);
 }

@@ -1,6 +1,6 @@
 function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-primary/50 via-neutral-100 to-primary/50">
       {/* Combined Landing Section */}
       <section className="flex-1 flex flex-col items-center justify-center py-16 px-4">
         {/* Title */}
