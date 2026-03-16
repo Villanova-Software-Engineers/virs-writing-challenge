@@ -1,20 +1,39 @@
 /**
  * src/services/apiClient.ts
  *
- * Central fetch wrapper for all FastAPI calls.
- * - Automatically attaches the Firebase ID token as a Bearer header.
- * - Reads the backend URL from VITE_API_URL in your .env
- *   e.g.  VITE_API_URL=http://localhost:8000
+ * Waits for Firebase auth to fully restore before grabbing the ID token,
+ * solving the race condition where auth.currentUser is null on first load.
  */
 
-import { auth } from "../firebase/config"; // ← points to your existing firebase/config.ts
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, authReady } from "../firebase/config";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
-async function getToken(): Promise<string | null> {
-  const user = auth.currentUser;
-  if (!user) return null;
-  return user.getIdToken();
+/**
+ * Waits for Firebase to restore auth state, then returns the ID token.
+ * Resolves to null if no user is signed in.
+ */
+function waitForToken(): Promise<string | null> {
+  return new Promise((resolve) => {
+    // onAuthStateChanged fires immediately with the current user
+    // (or null) once Firebase has restored the session.
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      unsubscribe(); // only need it once
+      if (!user) {
+        console.warn("[apiClient] No authenticated user — request will fail with 401");
+        resolve(null);
+        return;
+      }
+      try {
+        const token = await user.getIdToken();
+        resolve(token);
+      } catch (err) {
+        console.error("[apiClient] getIdToken() failed:", err);
+        resolve(null);
+      }
+    });
+  });
 }
 
 type Method = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
@@ -29,16 +48,25 @@ export async function apiClient<T = unknown>(
 ): Promise<T> {
   const { method = "GET", body, params } = options;
 
-  // Build query string if params provided
+  // Ensure Firebase persistence is set before we try to read the user
+  await authReady;
+
   const url = new URL(`${BASE_URL}${path}`);
   if (params) {
-    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+    Object.entries(params).forEach(([k, v]) =>
+      url.searchParams.set(k, String(v))
+    );
   }
 
-  const token = await getToken();
+  const token = await waitForToken();
+
+  if (!token) {
+    throw new Error("Not authenticated — please sign in again.");
+  }
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    Authorization: `Bearer ${token}`,
   };
 
   const res = await fetch(url.toString(), {
@@ -49,10 +77,10 @@ export async function apiClient<T = unknown>(
 
   if (!res.ok) {
     const detail = await res.text().catch(() => res.statusText);
-    throw new Error(`API ${method} ${path} → ${res.status}: ${detail}`);
+    console.error(`[apiClient] ${method} ${path} → ${res.status}:`, detail);
+    throw new Error(`${res.status}: ${detail}`);
   }
 
-  // 204 No Content — return empty object
   if (res.status === 204) return {} as T;
 
   return res.json() as Promise<T>;
