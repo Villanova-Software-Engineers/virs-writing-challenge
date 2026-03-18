@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from app.models import Semester
-from app.schemas import SemesterCreate
+from ..models import Semester
+from ..schemas import SemesterCreate
 from datetime import datetime
-from app.utils import generate_access_code
+from ..utils import generate_access_code
 
 def create_semester(data: SemesterCreate, db: Session):
     access_code = generate_access_code()

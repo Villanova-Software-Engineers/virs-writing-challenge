@@ -1,7 +1,6 @@
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, CheckConstraint
 from sqlalchemy.sql import func
-from app.core import Base
-
+from ..core import Base
 
 class Semester(Base):
     __tablename__ = "semesters"
