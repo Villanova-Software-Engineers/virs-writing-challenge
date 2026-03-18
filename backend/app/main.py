@@ -6,6 +6,7 @@ from slowapi.errors import RateLimitExceeded
 from .core import settings, limiter, initialize_firebase
 from .api import health_router
 from .api.semester import router as semesters_router
+from .api.messages import router as messages_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,6 +32,7 @@ app.add_middleware(
 
 app.include_router(health_router, prefix="/api")
 app.include_router(semesters_router, prefix="/api")
+app.include_router(messages_router, prefix="/api")
 
 @app.get("/")
 async def read_root():
