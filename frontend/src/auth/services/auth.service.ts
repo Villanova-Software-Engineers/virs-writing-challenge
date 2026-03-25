@@ -63,21 +63,11 @@ export class AuthService {
 
     if (!userProfile) {
       userProfile = this.buildFallbackUser(firebaseUser);
-      // Continue fetching profile in background for backfill if needed
+      // Use fallback profile from Firebase Auth data
+      // The backend will handle syncing complete profile data from PostgreSQL
       profilePromise.then((profile) => {
         if (!profile) {
-          this.createUserProfile({
-            id: userProfile!.id,
-            email: userProfile!.email,
-            firstName: userProfile!.firstName,
-            lastName: userProfile!.lastName,
-            department: userProfile!.department,
-            firebase_uid: userProfile!.firebase_uid,
-            isAdmin: false,
-            emailVerified: firebaseUser.emailVerified,
-          }).catch((error) => {
-            console.warn('[AuthService] Firestore profile backfill failed:', error);
-          });
+          console.debug('[AuthService] Firestore profile not available, using Firebase Auth data. Backend will sync from PostgreSQL.');
         }
       });
     }
@@ -115,17 +105,22 @@ export class AuthService {
       handleCodeInApp: false,
     });
 
-    //Continue profile tasks in background.
-    Promise.allSettled([
-      updateProfile(firebaseUser, { displayName: `${firstName} ${lastName}` }),
-      this.createUserProfile(user),
-    ]).then((results) => {
-      results.forEach((r, i) => {
-        if (r.status === 'rejected') {
-          console.error(`[AuthService] Background task ${i} failed:`, r.reason);
-        }
-      });
-    });
+    // IMPORTANT: Wait for profile creation to complete before signing out
+    // This ensures the profile exists in Firestore before the user can sign in
+    try {
+      await Promise.all([
+        updateProfile(firebaseUser, { displayName: `${firstName} ${lastName}` }),
+        this.createUserProfile(user),
+      ]);
+      console.log('[AuthService] User profile created successfully in Firestore');
+    } catch (error) {
+      console.error('[AuthService] Failed to create user profile:', error);
+      // Still continue with signup even if Firestore fails
+      // Backend will handle profile creation from Firebase Auth data
+    }
+
+    // Sign out the user after profile creation to enforce email verification
+    await firebaseSignOut(auth);
 
     return {
       success: true,

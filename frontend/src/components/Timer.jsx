@@ -215,7 +215,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
                   ? 'bg-red-500 animate-pulse'
                   : 'bg-accent'
             }`} />
-            {sessionSavedToday ? 'Session Saved' : isRunning ? 'Recording' : 'Ready'}
+            {sessionSavedToday ? 'Session Saved' : isRunning ? 'Session Started' : 'Ready'}
           </span>
         </div>
 

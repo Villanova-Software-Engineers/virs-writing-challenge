@@ -1,4 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/config";
+import { clearTokenCache } from "../services/apiClient";
+import { useAuth } from "../providers/AuthProvider";
 
 const navItems = [
   {
@@ -37,59 +41,68 @@ const navItems = [
       </svg>
     ),
   },
-    {
+  {
     to: "/admin",
-    label: "View Admin Page",
+    label: "Admin",
+    adminOnly: true,
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3l7 4v5c0 5-3.5 9-7 9s-7-4-7-9V7l7-4z" />
       </svg>
     ),
-  }
+  },
 ];
 
 function NavBar() {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
-  const handleLogout = () => {
-    // TODO: integrate with Firebase auth logout
-    console.log("Logout clicked");
+  const handleLogout = async () => {
+    try {
+      clearTokenCache();
+      await signOut(auth);
+      navigate("/auth/sign-in");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (
-    <nav className="h-screen bg-primary flex flex-col flex-shrink-0 w-48">
+    <nav className="h-full bg-primary flex flex-col flex-shrink-0 w-48">
       {/* Logo / Brand */}
-      <div className="flex items-center h-14 px-4 border-b border-background/10">
+      <div className="flex items-center h-14 px-4 border-b border-background/10 flex-shrink-0">
         <span className="text-background font-bold text-lg whitespace-nowrap">
           VIRS
         </span>
       </div>
 
       {/* Nav links */}
-      <div className="flex-1 flex flex-col py-3 gap-1">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === "/dashboard"}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-2.5 mx-1 rounded-lg transition-colors whitespace-nowrap ${
-                isActive
-                  ? "bg-background/20 text-background"
-                  : "text-background/60 hover:text-background hover:bg-background/10"
-              }`
-            }
-          >
-            {item.icon}
-            <span className="text-sm font-medium ">
-              {item.label}
-            </span>
-          </NavLink>
-        ))}
+      <div className="flex-1 flex flex-col py-3 gap-1 overflow-y-auto">
+        {navItems
+          .filter((item) => !item.adminOnly || isAdmin)
+          .map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === "/dashboard"}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-2.5 mx-1 rounded-lg transition-colors whitespace-nowrap ${
+                  isActive
+                    ? "bg-background/20 text-background"
+                    : "text-background/60 hover:text-background hover:bg-background/10"
+                }`
+              }
+            >
+              {item.icon}
+              <span className="text-sm font-medium ">
+                {item.label}
+              </span>
+            </NavLink>
+          ))}
       </div>
 
       {/* Logout */}
-      <div className="border-t border-background/10 py-3">
+      <div className="border-t border-background/10 py-3 flex-shrink-0">
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-4 py-2.5 mx-1 rounded-lg text-background/60 hover:text-background hover:bg-background/10 transition-colors whitespace-nowrap w-[calc(100%-0.5rem)] cursor-pointer"
