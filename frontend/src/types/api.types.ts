@@ -42,10 +42,13 @@ export interface Message {
   content: string;
   category: MessageCategory;
   author_name: string;
+  author_department: string;
+  author_is_admin: boolean;
   author_uid: string;
   created_at: string;
+  is_pinned: boolean;
+  pinned_at: string | null;
   likes: string[];
-  dislikes: string[];
   comments: Comment[];
 }
 
@@ -59,10 +62,13 @@ export interface MessageResponse {
   content: string;
   category: MessageCategory;
   author_name: string;
+  author_department: string;
+  author_is_admin: boolean;
   author_uid: string;
   created_at: string;
+  is_pinned: boolean;
+  pinned_at: string | null;
   likes: string[];
-  dislikes: string[];
   comments: Comment[];
 }
 
@@ -70,6 +76,8 @@ export interface Comment {
   id: string;
   author_uid: string;
   author_name: string;
+  author_department: string;
+  author_is_admin: boolean;
   content: string;
   created_at: string;
 }
@@ -96,6 +104,13 @@ export interface LeaderboardResponse {
 }
 
 // ── Profile Types ───────────────────────────────────────────────────────────
+export interface SemesterInfo {
+  id: number;
+  name: string;
+  access_code: string;
+  is_active: boolean;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -103,6 +118,7 @@ export interface UserProfile {
   last_name: string;
   department: string;
   is_admin: boolean;
+  current_semester: SemesterInfo | null;
   created_at: string;
 }
 

@@ -70,18 +70,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Listen to Firebase auth state changes
   useEffect(() => {
     let isMounted = true;
+    let unsubscribe: (() => void) | undefined;
 
     const initAuth = async () => {
       // Wait for Firebase to initialize
       await authReady;
 
-      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
         if (!isMounted) return;
+
+        // Only set user if email is verified (or if user is null for logout)
+        // This prevents unverified users from being treated as authenticated
+        if (firebaseUser && !firebaseUser.emailVerified) {
+          // User exists but email not verified - treat as logged out
+          setUser(null);
+          setProfile(null);
+          queryClient.removeQueries({ queryKey: queryKeys.profile });
+          if (isMounted) {
+            setIsLoading(false);
+          }
+          return;
+        }
 
         setUser(firebaseUser);
 
         if (firebaseUser) {
-          // User logged in - sync profile with backend
+          // User logged in with verified email - sync profile with backend
           try {
             const fetchedProfile = await api.get<UserProfile>("/api/profile");
             if (isMounted) {
@@ -104,17 +118,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setIsLoading(false);
         }
       });
-
-      return () => {
-        isMounted = false;
-        unsubscribe();
-      };
     };
 
     initAuth();
 
     return () => {
       isMounted = false;
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, [queryClient]);
 
