@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Table, Enum
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Table, Enum, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core import Base
@@ -33,6 +33,8 @@ class Message(Base):
     content = Column(String, nullable=False)
     category = Column(Enum(MessageCategory), default=MessageCategory.WIN, nullable=False)
     author_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    is_pinned = Column(Boolean, default=False, nullable=False, index=True)
+    pinned_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

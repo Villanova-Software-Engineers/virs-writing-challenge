@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import desc
 from app.auth import get_current_user, CurrentUser
 from app.core import limiter
 from app.core.database import get_db
@@ -29,6 +30,8 @@ class CommentResponse(BaseModel):
     id: str
     author_uid: str
     author_name: str
+    author_department: str
+    author_is_admin: bool
     content: str
     created_at: str
 
@@ -38,10 +41,13 @@ class MessageResponse(BaseModel):
     content: str
     category: str
     author_name: str
+    author_department: str
+    author_is_admin: bool
     author_uid: str
     created_at: str
+    is_pinned: bool = False
+    pinned_at: Optional[str] = None
     likes: List[str] = []
-    dislikes: List[str] = []
     comments: List[CommentResponse] = []
 
 
@@ -54,15 +60,20 @@ def message_to_response(msg: Message) -> MessageResponse:
         content=msg.content,
         category=msg.category.value,
         author_name=msg.author.display_name,
+        author_department=msg.author.department or "",
+        author_is_admin=msg.author.is_admin,
         author_uid=msg.author.uid,
         created_at=msg.created_at.isoformat() if msg.created_at else "",
+        is_pinned=msg.is_pinned,
+        pinned_at=msg.pinned_at.isoformat() if msg.pinned_at else None,
         likes=[u.uid for u in msg.liked_by],
-        dislikes=[u.uid for u in msg.disliked_by],
         comments=[
             CommentResponse(
                 id=str(c.id),
                 author_uid=c.author.uid,
                 author_name=c.author.display_name,
+                author_department=c.author.department or "",
+                author_is_admin=c.author.is_admin,
                 content=c.content,
                 created_at=c.created_at.isoformat() if c.created_at else "",
             )
@@ -87,9 +98,8 @@ async def get_messages(
             joinedload(Message.author),
             joinedload(Message.comments).joinedload(Comment.author),
             joinedload(Message.liked_by),
-            joinedload(Message.disliked_by),
         )
-        .order_by(Message.created_at.desc())
+        .order_by(desc(Message.is_pinned), desc(Message.created_at))
         .limit(limit)
         .all()
     )
@@ -133,7 +143,6 @@ async def create_message(
             joinedload(Message.author),
             joinedload(Message.comments),
             joinedload(Message.liked_by),
-            joinedload(Message.disliked_by),
         )
         .filter(Message.id == message.id)
         .first()
@@ -161,7 +170,6 @@ async def update_message(
             joinedload(Message.author),
             joinedload(Message.comments).joinedload(Comment.author),
             joinedload(Message.liked_by),
-            joinedload(Message.disliked_by),
         )
         .filter(Message.id == message_id)
         .first()
@@ -217,7 +225,6 @@ async def toggle_like(
             joinedload(Message.author),
             joinedload(Message.comments).joinedload(Comment.author),
             joinedload(Message.liked_by),
-            joinedload(Message.disliked_by),
         )
         .filter(Message.id == message_id)
         .first()
@@ -232,47 +239,6 @@ async def toggle_like(
         message.liked_by.remove(user)
     else:
         message.liked_by.append(user)
-        if user in message.disliked_by:
-            message.disliked_by.remove(user)
-
-    db.commit()
-    db.refresh(message)
-
-    return message_to_response(message)
-
-
-@router.post("/{message_id}/dislike", response_model=MessageResponse)
-@limiter.limit("60/minute;600/hour")
-async def toggle_dislike(
-    request: Request,
-    message_id: int,
-    current_user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    """Toggle dislike on a message"""
-    message = (
-        db.query(Message)
-        .options(
-            joinedload(Message.author),
-            joinedload(Message.comments).joinedload(Comment.author),
-            joinedload(Message.liked_by),
-            joinedload(Message.disliked_by),
-        )
-        .filter(Message.id == message_id)
-        .first()
-    )
-
-    if not message:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
-
-    user = db.query(User).filter(User.id == current_user.id).first()
-
-    if user in message.disliked_by:
-        message.disliked_by.remove(user)
-    else:
-        message.disliked_by.append(user)
-        if user in message.liked_by:
-            message.liked_by.remove(user)
 
     db.commit()
     db.refresh(message)
@@ -313,7 +279,6 @@ async def add_comment(
             joinedload(Message.author),
             joinedload(Message.comments).joinedload(Comment.author),
             joinedload(Message.liked_by),
-            joinedload(Message.disliked_by),
         )
         .filter(Message.id == message_id)
         .first()

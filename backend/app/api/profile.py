@@ -13,6 +13,13 @@ router = APIRouter(prefix="/profile", tags=["Profile"])
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
 
+class SemesterInfo(BaseModel):
+    id: int
+    name: str
+    access_code: str
+    is_active: bool
+
+
 class UserProfileResponse(BaseModel):
     uid: str
     email: Optional[str] = None
@@ -20,6 +27,7 @@ class UserProfileResponse(BaseModel):
     last_name: str
     department: str
     is_admin: bool = False
+    current_semester: Optional[SemesterInfo] = None
     created_at: Optional[str] = None
 
 
@@ -70,8 +78,20 @@ async def get_profile(
             last_name="",
             department="",
             is_admin=current_user.is_admin,
+            current_semester=None,
             created_at=None,
         )
+
+    current_semester_info = None
+    if user.current_semester_id:
+        semester = db.query(Semester).filter(Semester.id == user.current_semester_id).first()
+        if semester:
+            current_semester_info = SemesterInfo(
+                id=semester.id,
+                name=semester.name,
+                access_code=semester.access_code,
+                is_active=semester.is_active,
+            )
 
     return UserProfileResponse(
         uid=user.uid,
@@ -80,6 +100,7 @@ async def get_profile(
         last_name=user.last_name or "",
         department=user.department or "",
         is_admin=user.is_admin,
+        current_semester=current_semester_info,
         created_at=user.created_at.isoformat() if user.created_at else None,
     )
 
@@ -116,6 +137,17 @@ async def update_profile(
     db.commit()
     db.refresh(user)
 
+    current_semester_info = None
+    if user.current_semester_id:
+        semester = db.query(Semester).filter(Semester.id == user.current_semester_id).first()
+        if semester:
+            current_semester_info = SemesterInfo(
+                id=semester.id,
+                name=semester.name,
+                access_code=semester.access_code,
+                is_active=semester.is_active,
+            )
+
     return UserProfileResponse(
         uid=user.uid,
         email=user.email,
@@ -123,6 +155,7 @@ async def update_profile(
         last_name=user.last_name or "",
         department=user.department or "",
         is_admin=user.is_admin,
+        current_semester=current_semester_info,
         created_at=user.created_at.isoformat() if user.created_at else None,
     )
 

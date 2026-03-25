@@ -158,13 +158,20 @@ async def join_semester_route(
         semester = get_semester(id, db)
         if not semester:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")
-        
+
         if semester.access_code != data.access_code:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid access code")
-        
+
         if not semester.is_active:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This semester is not active")
-            
+
+        # Set user's current semester
+        from app.models import User
+        user = db.query(User).filter(User.id == current_user.id).first()
+        if user:
+            user.current_semester_id = id
+            db.commit()
+
         return semester
     except HTTPException:
         raise

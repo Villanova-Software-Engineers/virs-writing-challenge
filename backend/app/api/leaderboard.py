@@ -106,7 +106,9 @@ async def get_leaderboard(
 
     # Build leaderboard entries with ranks
     entries = []
+    current_user_db_id = int(current_user.id)  # Ensure it's an integer
     for idx, stats in enumerate(user_stats):
+        is_current = int(stats["user_id"]) == current_user_db_id
         entries.append(LeaderboardEntry(
             rank=idx + 1,
             user_uid=stats["user_uid"],
@@ -114,7 +116,7 @@ async def get_leaderboard(
             total_time=stats["total_time"],
             streak=stats["streak"],
             active_days=stats["active_days"],
-            is_current_user=stats["user_id"] == current_user.id,
+            is_current_user=is_current,
         ))
 
     # Ensure current user is in the list

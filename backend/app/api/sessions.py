@@ -133,8 +133,11 @@ async def get_today_sessions(
     current_user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Get current user's writing sessions for today"""
-    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    """Get current user's writing sessions for today (EST/EDT)"""
+    from datetime import timezone, timedelta
+    # EST is UTC-5 (or EDT is UTC-4 during daylight saving time)
+    est = timezone(timedelta(hours=-5))
+    today_start = datetime.now(est).replace(hour=0, minute=0, second=0, microsecond=0)
 
     sessions = (
         db.query(WritingSession)
