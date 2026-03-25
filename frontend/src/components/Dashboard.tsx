@@ -43,15 +43,6 @@ function MiniMessageCard({ msg }: { msg: MessageResponse }) {
             <span className="font-medium text-sm text-slate-800 truncate">
               {msg.author_name}
             </span>
-            <span
-              className={`text-xs px-1.5 py-0.5 rounded-full ${
-                msg.category === "win"
-                  ? "bg-[#003366] text-white"
-                  : "bg-slate-200 text-slate-600"
-              }`}
-            >
-              {msg.category}
-            </span>
           </div>
           <p className="text-sm text-slate-600 line-clamp-2">{msg.content}</p>
         </div>
