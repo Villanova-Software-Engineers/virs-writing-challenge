@@ -100,7 +100,7 @@ function AdminLayout() {
 function AppLayout() {
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen">
+      <div className="flex h-screen overflow-hidden">
         <NavBar />
         <main className="flex-1 overflow-y-auto">
           <Routes>
