@@ -196,22 +196,47 @@ function SavedSessionsPanel() {
 
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const [todayWritingTime, setTodayWritingTime] = useState(0);
+  const [currentTimerSeconds, setCurrentTimerSeconds] = useState(0);
   const [sessionSaved, setSessionSaved] = useState(false);
 
   const { data: streak, isLoading: streakLoading } = useCurrentStreak();
   const { data: semester } = useActiveSemester();
+  const { data: allSessionsData } = useSessions(1000); // Get all sessions for total
   const updateStreak = useUpdateStreak();
   const saveSession = useSaveSession();
 
+  // Calculate today's total time from saved sessions (using EST/EDT)
+  const todayWritingTime = (() => {
+    if (!allSessionsData?.sessions) return currentTimerSeconds;
+
+    // Get today's start in EST/EDT (midnight in Eastern Time)
+    // Convert current time to EST by getting UTC time and subtracting 5 hours
+    const now = new Date();
+    const estOffset = -5 * 60; // EST is UTC-5 (minutes)
+    const estTime = new Date(now.getTime() + (now.getTimezoneOffset() + estOffset) * 60000);
+
+    // Set to midnight EST
+    const todayStart = new Date(estTime.getFullYear(), estTime.getMonth(), estTime.getDate(), 0, 0, 0, 0);
+    // Convert back to UTC for comparison
+    const todayStartUTC = new Date(todayStart.getTime() - (now.getTimezoneOffset() + estOffset) * 60000);
+
+    const todaySessions = allSessionsData.sessions.filter(session => {
+      const sessionDate = new Date(session.started_at);
+      return sessionDate >= todayStartUTC;
+    });
+
+    const todayTotal = todaySessions.reduce((sum, session) => sum + session.duration, 0);
+    return todayTotal + currentTimerSeconds;
+  })();
+
   const handleTimerUpdate = useCallback((seconds: number) => {
-    setTodayWritingTime(seconds);
+    setCurrentTimerSeconds(seconds);
   }, []);
 
   const handleSessionSave = useCallback(
     async (session: { duration: number; timestamp: string; description?: string }) => {
       setSessionSaved(true);
-      setTodayWritingTime(session.duration);
+      setCurrentTimerSeconds(0);
 
       // Save session to backend
       const now = new Date();
@@ -260,32 +285,13 @@ export default function Dashboard() {
         <div className="lg:col-span-2 space-y-6">
           {/* Stats Row */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Session Status */}
+            {/* Semester Total */}
             <div className="bg-background rounded-xl shadow p-5">
               <div className="text-sm font-semibold text-muted uppercase tracking-wide mb-2">
-                Session Status
+                Semester Total
               </div>
-              <div
-                className={`text-xl font-bold ${
-                  sessionSaved
-                    ? "text-green-600"
-                    : todayWritingTime > 0
-                    ? "text-primary"
-                    : "text-muted"
-                }`}
-              >
-                {updateStreak.isPending || saveSession.isPending ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 size={18} className="animate-spin" />
-                    Saving...
-                  </span>
-                ) : sessionSaved ? (
-                  "Completed"
-                ) : todayWritingTime > 0 ? (
-                  "Active"
-                ) : (
-                  "Not Started"
-                )}
+              <div className="text-xl font-bold text-primary font-mono">
+                {allSessionsData ? formatTime(allSessionsData.total_time) : "00:00:00"}
               </div>
             </div>
 
