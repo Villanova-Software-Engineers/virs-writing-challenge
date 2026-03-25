@@ -18,7 +18,7 @@ import {
 import { auth } from "../firebase/config";
 import { useAuth } from "../providers/AuthProvider";
 import {
-  useMessages,
+  useInfiniteMessages,
   useCreateMessage,
   useLikeMessage,
   useAddComment,
@@ -369,10 +369,20 @@ export default function MessageBoard() {
   const [content, setContent] = useState("");
   const { isAdmin } = useAuth();
 
-  const { data: messages, isLoading, error } = useMessages(50);
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteMessages(20);
   const createMutation = useCreateMessage();
 
   const currentUserId = auth.currentUser?.uid || "";
+
+  // Flatten all pages into a single array of messages
+  const messages = data?.pages.flatMap((page) => page.messages) ?? [];
 
   const handlePost = () => {
     if (!content.trim()) return;
@@ -465,14 +475,37 @@ export default function MessageBoard() {
         {!isLoading && !error && (
           <div className="flex flex-col gap-3 pb-4">
             {messages && messages.length > 0 ? (
-              messages.map((msg) => (
-                <MessageCard
-                  key={msg.id}
-                  msg={msg}
-                  currentUserId={currentUserId}
-                  isAdmin={isAdmin}
-                />
-              ))
+              <>
+                {messages.map((msg) => (
+                  <MessageCard
+                    key={msg.id}
+                    msg={msg}
+                    currentUserId={currentUserId}
+                    isAdmin={isAdmin}
+                  />
+                ))}
+
+                {/* Load More Button */}
+                {hasNextPage && (
+                  <button
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    className="mt-4 py-3 px-6 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg text-slate-700 font-medium text-sm transition-all duration-150 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mx-auto"
+                  >
+                    {isFetchingNextPage ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Loading more...
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown size={16} />
+                        Load More Messages
+                      </>
+                    )}
+                  </button>
+                )}
+              </>
             ) : (
               <div className="text-center py-12 bg-white rounded-xl border border-slate-200 shadow-sm">
                 <MessageSquare className="mx-auto text-slate-300 mb-3" size={48} strokeWidth={1.5} />

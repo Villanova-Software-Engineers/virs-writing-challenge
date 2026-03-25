@@ -16,7 +16,7 @@ import {
   useActiveSemester,
   useSessions,
   useSaveSession,
-  useMessages,
+  useInfiniteMessages,
   useLikeMessage,
 } from "../hooks/useApi";
 import type { MessageResponse } from "../types/api.types";
@@ -35,24 +35,37 @@ function MiniMessageCard({ msg }: { msg: MessageResponse }) {
     return `${Math.floor(diff / 86400)}d`;
   };
 
+  // Check if message is truncated (roughly more than 2 lines)
+  const isTruncated = msg.content.length > 100 || msg.content.includes('\n');
+
   return (
-    <div className="bg-slate-50 rounded-lg p-3 hover:bg-slate-100 transition-colors">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-sm text-slate-800 truncate">
-              {msg.author_name}
-            </span>
+    <div className="bg-slate-50 rounded-lg p-3 hover:bg-slate-100 transition-colors group">
+      <a href="/messages" className="block">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-medium text-sm text-slate-800 truncate">
+                {msg.author_name}
+              </span>
+            </div>
+            <p className="text-sm text-slate-600 line-clamp-2 whitespace-pre-wrap">{msg.content}</p>
+            {isTruncated && (
+              <span className="text-xs text-[#003366] font-medium mt-1 inline-flex items-center gap-1 group-hover:underline">
+                Read more <ChevronRight size={12} />
+              </span>
+            )}
           </div>
-          <p className="text-sm text-slate-600 line-clamp-2 whitespace-pre-wrap">{msg.content}</p>
+          <span className="text-xs text-slate-400 shrink-0">
+            {timeAgo(msg.created_at)}
+          </span>
         </div>
-        <span className="text-xs text-slate-400 shrink-0">
-          {timeAgo(msg.created_at)}
-        </span>
-      </div>
+      </a>
       <div className="flex items-center gap-3 mt-2">
         <button
-          onClick={() => likeMutation.mutate(msg.id)}
+          onClick={(e) => {
+            e.preventDefault();
+            likeMutation.mutate(msg.id);
+          }}
           disabled={likeMutation.isPending}
           className={`flex items-center gap-1 text-xs ${
             hasLiked ? "text-[#003366] font-medium" : "text-slate-400 hover:text-slate-600"
@@ -72,7 +85,10 @@ function MiniMessageCard({ msg }: { msg: MessageResponse }) {
 
 // ── Recent Messages Panel ─────────────────────────────────────────────────────────
 function RecentMessagesPanel() {
-  const { data: messages, isLoading } = useMessages(5);
+  const { data, isLoading } = useInfiniteMessages(5);
+
+  // Get first 5 messages from first page
+  const messages = data?.pages?.[0]?.messages?.slice(0, 5) ?? [];
 
   return (
     <div className="bg-background rounded-xl shadow p-5">
@@ -95,7 +111,7 @@ function RecentMessagesPanel() {
         </div>
       ) : messages && messages.length > 0 ? (
         <div className="space-y-2">
-          {messages.map((msg) => (
+          {messages.map((msg: MessageResponse) => (
             <MiniMessageCard key={msg.id} msg={msg} />
           ))}
         </div>
