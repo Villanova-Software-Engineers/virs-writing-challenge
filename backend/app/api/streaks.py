@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
-from datetime import datetime, timezone, date
-from firebase_admin import firestore
-from app.auth import get_current_user
+from typing import Optional
+from datetime import date
+from sqlalchemy.orm import Session
+from app.auth import get_current_user, CurrentUser
 from app.core import limiter
+from app.core.database import get_db
+from app.models import Streak
 
 router = APIRouter(prefix="/streaks", tags=["Streaks"])
 
@@ -14,23 +17,6 @@ class StreakResponse(BaseModel):
     count: int
     last_date: Optional[str] = None  # ISO date string YYYY-MM-DD
 
-    class Config:
-        # allow Optional without importing at top
-        pass
-
-
-from typing import Optional  # noqa: E402 – keep near schema for readability
-
-
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
-def _db():
-    return firestore.client()
-
-
-def _streak_doc(db, uid: str):
-    return db.collection("streaks").document(uid)
-
 
 # ── Routes ───────────────────────────────────────────────────────────────────
 
@@ -38,17 +24,17 @@ def _streak_doc(db, uid: str):
 @limiter.limit("100/minute;1000/hour")
 async def get_current_streak(
     request: Request,
-    current_user=Depends(get_current_user),
+    current_user: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    db = _db()
-    doc = _streak_doc(db, current_user.uid).get()
-    if not doc.exists:
+    streak = db.query(Streak).filter(Streak.user_id == current_user.id).first()
+
+    if not streak:
         return StreakResponse(count=0, last_date=None)
 
-    data = doc.to_dict()
     return StreakResponse(
-        count=data.get("count", 0),
-        last_date=data.get("last_date"),  # stored as "YYYY-MM-DD"
+        count=streak.count,
+        last_date=streak.last_date.isoformat() if streak.last_date else None,
     )
 
 
@@ -56,7 +42,8 @@ async def get_current_streak(
 @limiter.limit("30/minute;300/hour")
 async def update_streak(
     request: Request,
-    current_user=Depends(get_current_user),
+    current_user: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """
     Called when a professor stops/submits their writing timer.
@@ -66,33 +53,47 @@ async def update_streak(
       - gap > 1 day         → reset to 1 (they wrote today, streak starts fresh)
       - no previous record  → set count = 1
     """
-    db = _db()
-    ref = _streak_doc(db, current_user.uid)
-    doc = ref.get()
-    today_str = date.today().isoformat()  # "YYYY-MM-DD"
+    today = date.today()
+    streak = db.query(Streak).filter(Streak.user_id == current_user.id).first()
 
-    if not doc.exists:
-        ref.set({"count": 1, "last_date": today_str})
-        return StreakResponse(count=1, last_date=today_str)
+    if not streak:
+        # Create new streak record
+        streak = Streak(
+            user_id=current_user.id,
+            count=1,
+            longest_streak=1,
+            last_date=today,
+        )
+        db.add(streak)
+        db.commit()
+        db.refresh(streak)
+        return StreakResponse(count=1, last_date=today.isoformat())
 
-    data = doc.to_dict()
-    last_date_str = data.get("last_date")
-    current_count = data.get("count", 0)
+    # Check if already written today
+    if streak.last_date == today:
+        return StreakResponse(
+            count=streak.count,
+            last_date=streak.last_date.isoformat(),
+        )
 
-    if last_date_str == today_str:
-        # Already written today — return unchanged
-        return StreakResponse(count=current_count, last_date=last_date_str)
-
-    new_count = current_count
-    if last_date_str:
-        last = date.fromisoformat(last_date_str)
-        delta = (date.today() - last).days
+    # Calculate new streak count
+    new_count = streak.count
+    if streak.last_date:
+        delta = (today - streak.last_date).days
         if delta == 1:
-            new_count = current_count + 1  # consecutive day
+            new_count = streak.count + 1  # consecutive day
         else:
             new_count = 1  # streak broken — restart
     else:
         new_count = 1
 
-    ref.set({"count": new_count, "last_date": today_str})
-    return StreakResponse(count=new_count, last_date=today_str)
+    # Update streak
+    streak.count = new_count
+    streak.last_date = today
+    if new_count > streak.longest_streak:
+        streak.longest_streak = new_count
+
+    db.commit()
+    db.refresh(streak)
+
+    return StreakResponse(count=streak.count, last_date=today.isoformat())

@@ -1,4 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/config";
+import { clearTokenCache } from "../services/apiClient";
 
 const navItems = [
   {
@@ -42,9 +45,14 @@ const navItems = [
 function NavBar() {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // TODO: integrate with Firebase auth logout
-    console.log("Logout clicked");
+  const handleLogout = async () => {
+    try {
+      clearTokenCache();
+      await signOut(auth);
+      navigate("/auth/sign-in");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (

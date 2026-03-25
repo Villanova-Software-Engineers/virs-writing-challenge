@@ -1,0 +1,353 @@
+import { useState, useCallback } from "react";
+import {
+  Flame,
+  Loader2,
+  MessageSquare,
+  Clock,
+  ChevronRight,
+  Calendar,
+  ThumbsUp,
+} from "lucide-react";
+import Timer from "./Timer";
+import { auth } from "../firebase/config";
+import {
+  useCurrentStreak,
+  useUpdateStreak,
+  useActiveSemester,
+  useSessions,
+  useSaveSession,
+  useMessages,
+  useLikeMessage,
+} from "../hooks/useApi";
+import type { MessageResponse } from "../types/api.types";
+
+// ── Mini Message Card ─────────────────────────────────────────────────────────
+function MiniMessageCard({ msg }: { msg: MessageResponse }) {
+  const currentUserId = auth.currentUser?.uid || "";
+  const hasLiked = msg.likes.includes(currentUserId);
+  const likeMutation = useLikeMessage();
+
+  const timeAgo = (isoString: string): string => {
+    const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+    return `${Math.floor(diff / 86400)}d`;
+  };
+
+  return (
+    <div className="bg-slate-50 rounded-lg p-3 hover:bg-slate-100 transition-colors">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-medium text-sm text-slate-800 truncate">
+              {msg.author_name}
+            </span>
+            <span
+              className={`text-xs px-1.5 py-0.5 rounded-full ${
+                msg.category === "win"
+                  ? "bg-[#003366] text-white"
+                  : "bg-slate-200 text-slate-600"
+              }`}
+            >
+              {msg.category}
+            </span>
+          </div>
+          <p className="text-sm text-slate-600 line-clamp-2">{msg.content}</p>
+        </div>
+        <span className="text-xs text-slate-400 shrink-0">
+          {timeAgo(msg.created_at)}
+        </span>
+      </div>
+      <div className="flex items-center gap-3 mt-2">
+        <button
+          onClick={() => likeMutation.mutate(msg.id)}
+          disabled={likeMutation.isPending}
+          className={`flex items-center gap-1 text-xs ${
+            hasLiked ? "text-[#003366] font-medium" : "text-slate-400 hover:text-slate-600"
+          }`}
+        >
+          <ThumbsUp size={12} />
+          {msg.likes.length > 0 && msg.likes.length}
+        </button>
+        <span className="flex items-center gap-1 text-xs text-slate-400">
+          <MessageSquare size={12} />
+          {msg.comments.length > 0 && msg.comments.length}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── Recent Messages Panel ─────────────────────────────────────────────────────────
+function RecentMessagesPanel() {
+  const { data: messages, isLoading } = useMessages(5);
+
+  return (
+    <div className="bg-background rounded-xl shadow p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <MessageSquare size={18} className="text-[#003366]" />
+          <h3 className="font-semibold text-text">Recent Messages</h3>
+        </div>
+        <a
+          href="/messages"
+          className="flex items-center gap-1 text-xs text-[#003366] font-medium hover:underline"
+        >
+          View all <ChevronRight size={14} />
+        </a>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-4">
+          <Loader2 className="animate-spin text-slate-400" size={20} />
+        </div>
+      ) : messages && messages.length > 0 ? (
+        <div className="space-y-2">
+          {messages.map((msg) => (
+            <MiniMessageCard key={msg.id} msg={msg} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-4 text-slate-400">
+          <MessageSquare className="mx-auto mb-2" size={24} />
+          <p className="text-sm">No messages yet</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Saved Sessions Panel ─────────────────────────────────────────────────────────
+function SavedSessionsPanel() {
+  const { data: sessionsData, isLoading } = useSessions(5);
+
+  const formatDuration = (seconds: number): string => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  };
+
+  const formatDate = (isoString: string): string => {
+    const date = new Date(isoString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  return (
+    <div className="bg-background rounded-xl shadow p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <Clock size={18} className="text-primary" />
+        <h3 className="font-semibold text-text">Recent Sessions</h3>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-4">
+          <Loader2 className="animate-spin text-slate-400" size={20} />
+        </div>
+      ) : sessionsData?.sessions && sessionsData.sessions.length > 0 ? (
+        <div className="space-y-2">
+          {sessionsData.sessions.map((session) => (
+            <div
+              key={session.id}
+              className="py-2 px-3 bg-slate-50 rounded-lg"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <Calendar size={14} className="text-slate-400" />
+                  <span className="text-sm text-slate-600">
+                    {formatDate(session.started_at)}
+                  </span>
+                </div>
+                <span className="font-medium text-sm text-[#003366]">
+                  {formatDuration(session.duration)}
+                </span>
+              </div>
+              {session.description && (
+                <p className="text-xs text-slate-500 truncate pl-5">
+                  {session.description}
+                </p>
+              )}
+            </div>
+          ))}
+          <div className="pt-2 border-t border-slate-100 mt-3">
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">Total</span>
+              <span className="font-bold text-[#003366]">
+                {formatDuration(sessionsData.total_time)}
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-4 text-slate-400">
+          <Clock className="mx-auto mb-2" size={24} />
+          <p className="text-sm">No sessions yet</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Dashboard ─────────────────────────────────────────────────────────────
+export default function Dashboard() {
+  const [todayWritingTime, setTodayWritingTime] = useState(0);
+  const [sessionSaved, setSessionSaved] = useState(false);
+
+  const { data: streak, isLoading: streakLoading } = useCurrentStreak();
+  const { data: semester } = useActiveSemester();
+  const updateStreak = useUpdateStreak();
+  const saveSession = useSaveSession();
+
+  const handleTimerUpdate = useCallback((seconds: number) => {
+    setTodayWritingTime(seconds);
+  }, []);
+
+  const handleSessionSave = useCallback(
+    async (session: { duration: number; timestamp: string; description?: string }) => {
+      setSessionSaved(true);
+      setTodayWritingTime(session.duration);
+
+      // Save session to backend
+      const now = new Date();
+      const startTime = new Date(now.getTime() - session.duration * 1000);
+      saveSession.mutate({
+        duration: session.duration,
+        started_at: startTime.toISOString(),
+        ended_at: now.toISOString(),
+        description: session.description,
+      });
+
+      // Update streak
+      updateStreak.mutate();
+    },
+    [updateStreak, saveSession]
+  );
+
+  const formatTime = (totalSeconds: number): string => {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(
+      s
+    ).padStart(2, "0")}`;
+  };
+
+  const streakCount = streak?.count ?? 0;
+  const flameColor =
+    streakCount >= 7
+      ? "text-orange-500"
+      : streakCount > 0
+      ? "text-amber-400"
+      : "text-slate-300";
+
+  return (
+    <div className="p-8">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-text">Dashboard</h1>
+        {semester && (
+          <p className="text-base text-muted mt-1">{semester.name}</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Stats Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Session Status */}
+            <div className="bg-background rounded-xl shadow p-5">
+              <div className="text-sm font-semibold text-muted uppercase tracking-wide mb-2">
+                Session Status
+              </div>
+              <div
+                className={`text-xl font-bold ${
+                  sessionSaved
+                    ? "text-green-600"
+                    : todayWritingTime > 0
+                    ? "text-primary"
+                    : "text-muted"
+                }`}
+              >
+                {updateStreak.isPending || saveSession.isPending ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 size={18} className="animate-spin" />
+                    Saving...
+                  </span>
+                ) : sessionSaved ? (
+                  "Completed"
+                ) : todayWritingTime > 0 ? (
+                  "Active"
+                ) : (
+                  "Not Started"
+                )}
+              </div>
+            </div>
+
+            {/* Streak */}
+            <div className="bg-background rounded-xl shadow p-5">
+              <div className="text-sm font-semibold text-muted uppercase tracking-wide mb-2">
+                Writing Streak
+              </div>
+              <div className="flex items-center gap-2">
+                {streakLoading ? (
+                  <Loader2
+                    size={22}
+                    className="text-slate-300 animate-spin"
+                  />
+                ) : (
+                  <Flame
+                    size={22}
+                    className={`${flameColor} transition-colors duration-500`}
+                    fill={streakCount > 0 ? "currentColor" : "none"}
+                  />
+                )}
+                <span className="text-xl font-bold text-text">
+                  {streakLoading
+                    ? "—"
+                    : `${streakCount} day${streakCount !== 1 ? "s" : ""}`}
+                </span>
+              </div>
+              {streakCount >= 7 && (
+                <p className="text-xs text-orange-500 mt-1 font-medium">
+                  On fire!
+                </p>
+              )}
+            </div>
+
+            {/* Today's Time */}
+            <div className="bg-background rounded-xl shadow p-5">
+              <div className="text-sm font-semibold text-muted uppercase tracking-wide mb-2">
+                Today's Time
+              </div>
+              <div className="text-xl font-bold text-text font-mono">
+                {formatTime(todayWritingTime)}
+              </div>
+            </div>
+          </div>
+
+          {/* Timer */}
+          <div className="bg-background rounded-xl shadow p-8">
+            <Timer
+              onTimerUpdate={handleTimerUpdate}
+              onSessionSave={handleSessionSave}
+            />
+          </div>
+
+          {/* Recent Messages */}
+          <RecentMessagesPanel />
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          <SavedSessionsPanel />
+        </div>
+      </div>
+    </div>
+  );
+}

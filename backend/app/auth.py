@@ -1,30 +1,148 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from firebase_admin import auth as firebase_auth
+from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from typing import Optional
+
+from app.core.database import get_db
+from app.models import User
+
 
 security = HTTPBearer()
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+
+class CurrentUser(BaseModel):
+    """Represents the authenticated user from Firebase token"""
+    id: int  # Database ID
+    uid: str  # Firebase UID
+    email: Optional[str] = None
+    display_name: Optional[str] = None
+    is_admin: bool = False
+
+    class Config:
+        from_attributes = True
+
+
+def get_or_create_user(
+    db: Session,
+    uid: str,
+    email: Optional[str],
+    name: Optional[str] = None,
+    is_admin_claim: bool = False,
+) -> User:
+    """Get existing user or create/update from Firebase auth data"""
+    user = db.query(User).filter(User.uid == uid).first()
+
+    # Parse name into first/last
+    first_name = ""
+    last_name = ""
+    if name:
+        name_parts = name.strip().split(" ", 1)
+        first_name = name_parts[0] if name_parts else ""
+        last_name = name_parts[1] if len(name_parts) > 1 else ""
+
+    if user:
+        # Update user info if changed (sync from Firebase)
+        updated = False
+        if email and user.email != email:
+            user.email = email
+            updated = True
+        # Only update name if user hasn't set their own and Firebase has one
+        if name and not user.first_name and not user.last_name:
+            user.first_name = first_name
+            user.last_name = last_name
+            updated = True
+        # Sync admin status from Firebase custom claims
+        if is_admin_claim and not user.is_admin:
+            user.is_admin = True
+            updated = True
+        if updated:
+            db.commit()
+            db.refresh(user)
+        return user
+
+    # Create new user with Firebase data
+    user = User(
+        uid=uid,
+        email=email or "",
+        first_name=first_name,
+        last_name=last_name,
+        department="",
+        is_admin=is_admin_claim,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+) -> CurrentUser:
     token = credentials.credentials
     try:
         decoded = firebase_auth.verify_id_token(token)
-        return decoded
+        uid = decoded.get("uid", "")
+        email = decoded.get("email")
+        name = decoded.get("name")  # Display name from Firebase
+        is_admin_claim = decoded.get("admin", False)
+
+        # Get or create user in PostgreSQL, syncing Firebase data
+        user = get_or_create_user(
+            db, uid, email,
+            name=name,
+            is_admin_claim=is_admin_claim,
+        )
+
+        return CurrentUser(
+            id=user.id,
+            uid=uid,
+            email=user.email,
+            display_name=user.display_name,
+            is_admin=user.is_admin or is_admin_claim,
+        )
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token"
         )
 
-async def require_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):
+
+async def require_admin(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+) -> CurrentUser:
     token = credentials.credentials
     try:
         decoded = firebase_auth.verify_id_token(token)
-        if not decoded.get("admin", False):
+        uid = decoded.get("uid", "")
+        email = decoded.get("email")
+        name = decoded.get("name")
+        is_admin_claim = decoded.get("admin", False)
+
+        # Get or create user in PostgreSQL
+        user = get_or_create_user(
+            db, uid, email,
+            name=name,
+            is_admin_claim=is_admin_claim,
+        )
+
+        is_admin = user.is_admin or is_admin_claim
+        if not is_admin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Admin access required"
             )
-        return decoded
+
+        return CurrentUser(
+            id=user.id,
+            uid=uid,
+            email=user.email,
+            display_name=user.display_name,
+            is_admin=True,
+        )
     except HTTPException:
         raise
     except Exception:
