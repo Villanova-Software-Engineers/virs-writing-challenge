@@ -9,8 +9,10 @@ import {
   useQuery,
   useMutation,
   useQueryClient,
+  useInfiniteQuery,
   type UseQueryOptions,
   type UseMutationOptions,
+  type UseInfiniteQueryOptions,
 } from "@tanstack/react-query";
 import { api } from "../services/apiClient";
 import type {
@@ -19,6 +21,7 @@ import type {
   Message,
   MessageCreate,
   MessageResponse,
+  MessageListResponse,
   LeaderboardResponse,
   UserProfile,
   UserProfileUpdate,
@@ -132,13 +135,20 @@ export function useJoinSemester() {
 }
 
 // ── Message Hooks ───────────────────────────────────────────────────────────
-export function useMessages(
-  limit = 50,
-  options?: Omit<UseQueryOptions<MessageResponse[]>, "queryKey" | "queryFn">
+export function useInfiniteMessages(
+  limit = 20,
+  options?: Omit<UseInfiniteQueryOptions<MessageListResponse>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam">
 ) {
-  return useQuery({
-    queryKey: queryKeys.messagesList(limit),
-    queryFn: () => api.get<MessageResponse[]>("/api/messages", { limit }),
+  return useInfiniteQuery({
+    queryKey: ["messages", "infinite", limit],
+    queryFn: ({ pageParam }) =>
+      api.get<MessageListResponse>("/api/messages", {
+        limit,
+        cursor: pageParam as string | undefined,
+      }),
+    getNextPageParam: (lastPage) =>
+      lastPage.has_more ? lastPage.next_cursor : undefined,
+    initialPageParam: undefined,
     staleTime: 30 * 1000, // 30 seconds
     ...options,
   });
@@ -163,21 +173,25 @@ export function useCreateMessage(
     },
     onSuccess: (newMessage) => {
       console.log("[useCreateMessage] onSuccess called with message:", newMessage);
-      // Optimistically add to cache for limit=50
-      queryClient.setQueryData<MessageResponse[]>(
-        queryKeys.messagesList(50),
-        (old) => (old ? [newMessage, ...old] : [newMessage])
-      );
-      // Also add to limit=5 cache (Dashboard)
-      queryClient.setQueryData<MessageResponse[]>(
-        queryKeys.messagesList(5),
+
+      // Update all infinite query caches - add to first page
+      queryClient.setQueriesData<{ pages: MessageListResponse[]; pageParams: unknown[] }>(
+        { queryKey: ["messages", "infinite"] },
         (old) => {
-          if (!old) return [newMessage];
-          return [newMessage, ...old].slice(0, 5);
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page, index) =>
+              index === 0
+                ? { ...page, messages: [newMessage, ...page.messages] }
+                : page
+            ),
+          };
         }
       );
-      // Also invalidate to ensure data persists on refresh
-      queryClient.invalidateQueries({ queryKey: queryKeys.messages });
+
+      // Invalidate to ensure fresh data on refresh
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
     },
     onError: (error) => {
       console.error("[useCreateMessage] onError called with error:", error);

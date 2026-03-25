@@ -86,6 +86,12 @@ export interface CommentCreate {
   content: string;
 }
 
+export interface MessageListResponse {
+  messages: MessageResponse[];
+  next_cursor: string | null;
+  has_more: boolean;
+}
+
 // ── Leaderboard Types ───────────────────────────────────────────────────────
 export interface LeaderboardEntry {
   rank: number;

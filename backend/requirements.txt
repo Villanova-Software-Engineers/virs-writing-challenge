@@ -14,7 +14,6 @@ firebase_admin==7.1.0
 google-api-core==2.29.0
 google-auth==2.47.0
 google-cloud-core==2.5.0
-# google-cloud-firestore removed - using PostgreSQL instead
 google-cloud-storage==3.8.0
 google-crc32c==1.8.0
 google-resumable-media==2.8.0
@@ -35,7 +34,7 @@ msgpack==1.1.2
 packaging==25.0
 proto-plus==1.27.0
 protobuf==6.33.4
-psycopg-binary
+psycopg2-binary==2.9.10
 pyasn1==0.6.2
 pyasn1_modules==0.4.2
 pycparser==2.23

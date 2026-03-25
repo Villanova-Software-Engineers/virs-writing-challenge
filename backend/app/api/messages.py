@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import desc
+from sqlalchemy import desc, or_, and_
 from app.auth import get_current_user, CurrentUser
 from app.core import limiter
 from app.core.database import get_db
@@ -51,6 +51,12 @@ class MessageResponse(BaseModel):
     comments: List[CommentResponse] = []
 
 
+class MessageListResponse(BaseModel):
+    messages: List[MessageResponse]
+    next_cursor: Optional[str] = None
+    has_more: bool = False
+
+
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 def message_to_response(msg: Message) -> MessageResponse:
@@ -84,26 +90,90 @@ def message_to_response(msg: Message) -> MessageResponse:
 
 # ── Routes ───────────────────────────────────────────────────────────────────
 
-@router.get("", response_model=List[MessageResponse])
+@router.get("", response_model=MessageListResponse)
 @limiter.limit("100/minute;1000/hour")
 async def get_messages(
     request: Request,
-    limit: int = 50,
+    limit: int = 20,
+    cursor: Optional[str] = None,
     current_user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    messages = (
+    """
+    Get messages with cursor-based pagination.
+
+    - limit: Number of messages to return (default: 20, max: 100)
+    - cursor: Cursor for pagination (format: "pinned_timestamp_id" or "unpinned_timestamp_id")
+    """
+    # Limit maximum page size
+    limit = min(limit, 100)
+
+    query = (
         db.query(Message)
         .options(
             joinedload(Message.author),
             joinedload(Message.comments).joinedload(Comment.author),
             joinedload(Message.liked_by),
         )
-        .order_by(desc(Message.is_pinned), desc(Message.created_at))
-        .limit(limit)
-        .all()
     )
-    return [message_to_response(msg) for msg in messages]
+
+    # Apply cursor-based filtering
+    if cursor:
+        try:
+            # Cursor format: "is_pinned_timestamp_id"
+            parts = cursor.split("_", 2)
+            if len(parts) == 3:
+                is_pinned = parts[0] == "1"
+                cursor_timestamp = parts[1]
+                cursor_id = int(parts[2])
+
+                # Complex cursor logic: pinned messages first, then by timestamp
+                if is_pinned:
+                    # If cursor is pinned, get remaining pinned messages or all unpinned
+                    query = query.filter(
+                        or_(
+                            Message.is_pinned == False,
+                            and_(
+                                Message.is_pinned == True,
+                                or_(
+                                    Message.created_at < cursor_timestamp,
+                                    and_(Message.created_at == cursor_timestamp, Message.id < cursor_id)
+                                )
+                            )
+                        )
+                    )
+                else:
+                    # If cursor is unpinned, only get unpinned messages after cursor
+                    query = query.filter(
+                        Message.is_pinned == False,
+                        or_(
+                            Message.created_at < cursor_timestamp,
+                            and_(Message.created_at == cursor_timestamp, Message.id < cursor_id)
+                        )
+                    )
+        except (ValueError, IndexError):
+            pass  # Invalid cursor, ignore and return from beginning
+
+    query = query.order_by(desc(Message.is_pinned), desc(Message.created_at), desc(Message.id))
+
+    # Fetch limit + 1 to check if there are more messages
+    messages = query.limit(limit + 1).all()
+
+    has_more = len(messages) > limit
+    if has_more:
+        messages = messages[:limit]
+
+    # Generate next cursor from last message
+    next_cursor = None
+    if has_more and messages:
+        last_msg = messages[-1]
+        next_cursor = f"{'1' if last_msg.is_pinned else '0'}_{last_msg.created_at.isoformat()}_{last_msg.id}"
+
+    return MessageListResponse(
+        messages=[message_to_response(msg) for msg in messages],
+        next_cursor=next_cursor,
+        has_more=has_more
+    )
 
 
 @router.post("", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)

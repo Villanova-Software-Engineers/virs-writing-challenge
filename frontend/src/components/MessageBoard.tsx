@@ -18,7 +18,7 @@ import {
 import { auth } from "../firebase/config";
 import { useAuth } from "../providers/AuthProvider";
 import {
-  useMessages,
+  useInfiniteMessages,
   useCreateMessage,
   useLikeMessage,
   useAddComment,
@@ -95,7 +95,7 @@ function CommentItem({ comment, isAdmin, onDelete }: { comment: Comment; isAdmin
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-700 leading-relaxed">{comment.content}</p>
+            <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{comment.content}</p>
             <div className="text-[10px] text-slate-400 mt-1">{timeAgo(comment.created_at)}</div>
           </div>
           {isAdmin && onDelete && (
@@ -140,7 +140,7 @@ function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
   const handleSaveEdit = () => {
     if (editValue.trim()) {
       editMutation.mutate(
-        { messageId: msg.id, content: editValue.trim() },
+        { messageId: msg.id, content: editValue },
         {
           onSuccess: () => setEditing(false),
         }
@@ -151,7 +151,7 @@ function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
   const handlePostComment = () => {
     if (commentInput.trim()) {
       commentMutation.mutate(
-        { messageId: msg.id, content: commentInput.trim() },
+        { messageId: msg.id, content: commentInput },
         {
           onSuccess: () => setCommentInput(""),
         }
@@ -278,7 +278,7 @@ function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
               </div>
             </div>
           ) : (
-            <p className="text-slate-800 text-sm leading-relaxed mt-2">{msg.content}</p>
+            <p className="text-slate-800 text-sm leading-relaxed mt-2 whitespace-pre-wrap">{msg.content}</p>
           )}
 
           {/* Actions Row */}
@@ -369,16 +369,26 @@ export default function MessageBoard() {
   const [content, setContent] = useState("");
   const { isAdmin } = useAuth();
 
-  const { data: messages, isLoading, error } = useMessages(50);
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteMessages(20);
   const createMutation = useCreateMessage();
 
   const currentUserId = auth.currentUser?.uid || "";
 
+  // Flatten all pages into a single array of messages
+  const messages = data?.pages.flatMap((page) => page.messages) ?? [];
+
   const handlePost = () => {
     if (!content.trim()) return;
-    console.log("[MessageBoard] Posting message:", { content: content.trim(), category: "win" });
+    console.log("[MessageBoard] Posting message:", { content, category: "win" });
     createMutation.mutate(
-      { content: content.trim(), category: "win" },
+      { content, category: "win" },
       {
         onSuccess: (newMessage) => {
           console.log("[MessageBoard] Message posted successfully:", newMessage);
@@ -465,14 +475,37 @@ export default function MessageBoard() {
         {!isLoading && !error && (
           <div className="flex flex-col gap-3 pb-4">
             {messages && messages.length > 0 ? (
-              messages.map((msg) => (
-                <MessageCard
-                  key={msg.id}
-                  msg={msg}
-                  currentUserId={currentUserId}
-                  isAdmin={isAdmin}
-                />
-              ))
+              <>
+                {messages.map((msg) => (
+                  <MessageCard
+                    key={msg.id}
+                    msg={msg}
+                    currentUserId={currentUserId}
+                    isAdmin={isAdmin}
+                  />
+                ))}
+
+                {/* Load More Button */}
+                {hasNextPage && (
+                  <button
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    className="mt-4 py-3 px-6 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg text-slate-700 font-medium text-sm transition-all duration-150 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mx-auto"
+                  >
+                    {isFetchingNextPage ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Loading more...
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown size={16} />
+                        Load More Messages
+                      </>
+                    )}
+                  </button>
+                )}
+              </>
             ) : (
               <div className="text-center py-12 bg-white rounded-xl border border-slate-200 shadow-sm">
                 <MessageSquare className="mx-auto text-slate-300 mb-3" size={48} strokeWidth={1.5} />
