@@ -303,13 +303,16 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="department" className="block text-xs font-semibold text-muted tracking-wide">Department</label>
+        <label htmlFor="department" className="block text-xs font-semibold text-muted tracking-wide">
+          Department <span className="text-red-500">*</span>
+        </label>
         <select
           id="department"
           value={formData.department}
           onChange={handleChange}
           onBlur={handleBlur}
           disabled={isLoading}
+          required
           className={`w-full rounded-[14px] border bg-background px-3.5 py-3 text-sm text-text transition-all hover:border-primary/40 focus:border-primary focus:shadow-[0_0_0_4px_rgba(0,75,145,0.18)] focus:outline-none ${
             errors.department ? 'border-red-400/50 shadow-[0_0_0_4px_rgba(248,113,113,0.12)]' : 'border-accent/20'
           } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
@@ -326,9 +329,12 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
 
       {formData.department === 'Other' && (
         <div className="flex flex-col gap-1.5">
+          <label htmlFor="customDepartment" className="block text-xs font-semibold text-muted tracking-wide">
+            Enter your department <span className="text-red-500">*</span>
+          </label>
           <InputField
             variant="auth"
-            label="Enter your department"
+            label=""
             id="customDepartment"
             type="text"
             placeholder="e.g., Research & Development"

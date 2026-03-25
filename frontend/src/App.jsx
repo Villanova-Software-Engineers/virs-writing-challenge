@@ -83,6 +83,20 @@ function AdminRoute({ children }) {
   return children;
 }
 
+// Admin layout with admin navbar
+function AdminLayout() {
+  return (
+    <AdminRoute>
+      <div className="flex min-h-screen">
+        <main className="flex-1 overflow-y-auto">
+          <AdminPage />
+        </main>
+      </div>
+    </AdminRoute>
+  );
+}
+
+// Regular app layout with user navbar
 function AppLayout() {
   return (
     <ProtectedRoute>
@@ -94,7 +108,6 @@ function AppLayout() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/messages" element={<MessageBoard />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
           </Routes>
         </main>
       </div>
@@ -111,6 +124,7 @@ function App() {
         <Route path="/auth/sign-up" element={<PublicRoute><SignUpPage /></PublicRoute>} />
         <Route path="/auth/professor-code" element={<ProfessorCodePage />} />
         <Route path="/auth/verify-email" element={<EmailVerificationPage />} />
+        <Route path="/admin/*" element={<AdminLayout />} />
         <Route path="/*" element={<AppLayout />} />
       </Routes>
     </BrowserRouter>

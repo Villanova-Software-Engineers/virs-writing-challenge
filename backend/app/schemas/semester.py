@@ -16,6 +16,7 @@ class SemesterCreate(SemesterBase):
 
 class SemesterUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
+    access_code: Optional[str] = Field(None, min_length=1, max_length=20)
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     auto_clear: Optional[bool] = None
