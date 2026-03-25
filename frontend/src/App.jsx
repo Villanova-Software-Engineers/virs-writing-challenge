@@ -10,6 +10,7 @@ import Dashboard from "./components/Dashboard";
 import Profile from "./components/Profile";
 import MessageBoard from "./components/MessageBoard";
 import Leaderboard from "./components/Leaderboard";
+import AdminPage from "./components/admin/AdminPage";
 import { useAuth } from "./providers/AuthProvider";
 
 // Protected route wrapper - redirects to sign-in if not authenticated
@@ -56,6 +57,32 @@ function PublicRoute({ children }) {
   return children;
 }
 
+// Admin-only route wrapper
+function AdminRoute({ children }) {
+  const { user, isLoading, isAdmin } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="animate-spin text-primary" size={32} />
+          <p className="text-muted text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth/sign-in" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+}
+
 function AppLayout() {
   return (
     <ProtectedRoute>
@@ -67,6 +94,7 @@ function AppLayout() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/messages" element={<MessageBoard />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
           </Routes>
         </main>
       </div>

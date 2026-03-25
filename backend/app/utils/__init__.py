@@ -1,1 +1,1 @@
-from .utils import generate_access_code
+from .access_code_generator import generate_access_code

@@ -28,6 +28,13 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [sentToEmail, setSentToEmail] = useState('');
   const [signUpMessage, setSignUpMessage] = useState('');
+  const [passwordChecks, setPasswordChecks] = useState({
+    hasUppercase: false,
+    hasLowercase: false,
+    hasSpecial: false,
+    hasNumber: false,
+  });
+  const [confirmPasswordMatch, setConfirmPasswordMatch] = useState(false);
 
   const validateName = (name: string, fieldName: string): string => {
     if (!name.trim()) return `${fieldName} is required`;
@@ -47,6 +54,12 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
+    if (id === 'password') {
+      checkPasswordStrength(value);
+    }
+    if (id === 'confirmPassword') {
+      setConfirmPasswordMatch(value === formData.password);
+    }
     if (errors[id as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [id]: '' }));
     }
@@ -85,6 +98,14 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
     if (error) {
       setErrors(prev => ({ ...prev, [id]: error }));
     }
+  };
+
+  const checkPasswordStrength = (password: string) => {
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{}|;':",./<>?]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    setPasswordChecks({ hasUppercase, hasLowercase, hasSpecial, hasNumber });
   };
 
   const validateForm = (): boolean => {
@@ -242,7 +263,22 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
           disabled={isLoading}
         />
         {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
-        <p className="text-xs text-muted">Use at least 1 upper, 1 number, and 1 special character.</p>
+        {formData.password && (
+          <div className="flex flex-col gap-1 text-xs">
+            <div className={`flex items-center gap-2 ${passwordChecks.hasUppercase ? 'text-green-600' : 'text-muted'}`}>
+              <span>{passwordChecks.hasUppercase ? '✓' : '○'}</span> At least 1 uppercase letter
+            </div>
+            <div className={`flex items-center gap-2 ${passwordChecks.hasLowercase ? 'text-green-600' : 'text-muted'}`}>
+              <span>{passwordChecks.hasLowercase ? '✓' : '○'}</span> At least 1 lowercase letter
+            </div>
+            <div className={`flex items-center gap-2 ${passwordChecks.hasNumber ? 'text-green-600' : 'text-muted'}`}>
+              <span>{passwordChecks.hasNumber ? '✓' : '○'}</span> At least 1 number
+            </div>
+            <div className={`flex items-center gap-2 ${passwordChecks.hasSpecial ? 'text-green-600' : 'text-muted'}`}>
+              <span>{passwordChecks.hasSpecial ? '✓' : '○'}</span> At least 1 special character
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -259,6 +295,11 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
           disabled={isLoading}
         />
         {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
+        {formData.confirmPassword && (
+          <div className={`flex items-center gap-2 text-xs ${confirmPasswordMatch ? 'text-green-600' : 'text-muted'}`}>
+            <span>{confirmPasswordMatch ? '✓' : '○'}</span> Passwords match
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">

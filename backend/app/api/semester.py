@@ -8,30 +8,6 @@ from app.auth import get_current_user, require_admin
 
 router = APIRouter(prefix="/semesters", tags=["Semesters"])
 
-@router.get("/active", response_model=SemesterResponse)
-@limiter.limit("100/minute;1000/hour")
-async def get_active_semester_route(request: Request, db: Session = Depends(get_db)):
-    semester = get_active_semester(db)
-    if not semester:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="No active semester found"
-        )
-    
-    return semester
-
-# ADMIN ONLY
-@router.get("", response_model=list[SemesterResponse])
-@limiter.limit("100/minute;1000/hour")
-async def get_all_semesters_route(
-    request: Request,
-    skip: int = 0,
-    limit: int = 100,
-    current_user = Depends(require_admin),
-    db: Session = Depends(get_db)
-):
-    semesters = get_semesters(skip, limit, db)
-    return semesters
 
 # ADMIN ONLY
 @router.post("", response_model=SemesterResponse)
@@ -55,39 +31,48 @@ async def create_semester_route(
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Semester with this access code already exists")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create semester")
+
 
 # ADMIN ONLY
-@router.patch("/{id}/end", response_model=SemesterResponse)
-@limiter.limit("5/minute;50/hour")
-async def end_semester_route(
+@router.get("", response_model=list[SemesterResponse])
+@limiter.limit("100/minute;1000/hour")
+async def get_all_semesters_route(
     request: Request,
-    id: int,
+    skip: int = 0,
+    limit: int = 100,
     current_user = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    semester = get_semester(id, db)
-    if not semester:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")
-    
-    if not semester.is_active:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Semester is already ended")
-    
-    ended_semester = end_semester(id, db)
-    return ended_semester
+    try:
+        semesters = get_semesters(skip, limit, db)
+        return semesters
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve semesters")
 
-# ADMIN ONLY
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-@limiter.limit("5/minute;30/hour")
-async def delete_semester_route(
-    request: Request, 
-    id: int, 
-    current_user = Depends(require_admin), 
-    db: Session = Depends(get_db)
-):
-    result = delete_semester(id, db)
-    if not result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")  # Add this
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.get("/active", response_model=SemesterResponse)
+@limiter.limit("100/minute;1000/hour")
+async def get_active_semester_route(request: Request, db: Session = Depends(get_db)):
+    try:
+        semester = get_active_semester(db)
+        if not semester:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="No active semester found"
+            )
+        
+        return semester
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve active semester")
+
 
 @router.get("/{id}", response_model=SemesterResponse)
 @limiter.limit("100/minute;1000/hour")
@@ -96,10 +81,16 @@ async def get_semester_route(
     id: int,
     db: Session = Depends(get_db)
 ):
-    semester = get_semester(id, db)
-    if not semester:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")
-    return semester
+    try:
+        semester = get_semester(id, db)
+        if not semester:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")
+        return semester
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve semester")
+
 
 # ADMIN ONLY
 @router.patch("/{id}", response_model=SemesterResponse)
@@ -111,16 +102,47 @@ async def update_semester_route(
     current_user = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    semester = get_semester(id, db)
-    if not semester:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")
-    
-    for field, value in data.model_dump(exclude_unset=True).items():
-        setattr(semester, field, value)
-    
-    db.commit()
-    db.refresh(semester)
-    return semester
+    try:
+        semester = get_semester(id, db)
+        if not semester:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")
+        
+        for field, value in data.model_dump(exclude_unset=True).items():
+            setattr(semester, field, value)
+        
+        db.commit()
+        db.refresh(semester)
+        return semester
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Failed to update semester")
+
+
+# ADMIN ONLY
+@router.patch("/{id}/end", response_model=SemesterResponse)
+@limiter.limit("5/minute;50/hour")
+async def end_semester_route(
+    request: Request,
+    id: int,
+    current_user = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    try:
+        semester = get_semester(id, db)
+        if not semester:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")
+        
+        if not semester.is_active:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Semester is already ended")
+        
+        ended_semester = end_semester(id, db)
+        return ended_semester
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to end semester")
 
 
 @router.post("/{id}/join", response_model=SemesterResponse)
@@ -132,14 +154,39 @@ async def join_semester_route(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    semester = get_semester(id, db)
-    if not semester:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")
-    
-    if semester.access_code != data.access_code:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid access code")
-    
-    if not semester.is_active:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This semester is not active")
+    try:
+        semester = get_semester(id, db)
+        if not semester:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")
         
-    return semester
+        if semester.access_code != data.access_code:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid access code")
+        
+        if not semester.is_active:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This semester is not active")
+            
+        return semester
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to join semester")
+    
+
+# ADMIN ONLY
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("5/minute;30/hour")
+async def delete_semester_route(
+    request: Request, 
+    id: int, 
+    current_user = Depends(require_admin), 
+    db: Session = Depends(get_db)
+):
+    try:
+        result = delete_semester(id, db)
+        if not result:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")  # Add this
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to delete semester")

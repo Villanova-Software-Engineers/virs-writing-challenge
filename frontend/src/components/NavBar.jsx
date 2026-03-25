@@ -40,6 +40,15 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    to: "/admin",
+    label: "Admin",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3l7 4v5c0 5-3.5 9-7 9s-7-4-7-9V7l7-4z" />
+      </svg>
+    ),
+  },
 ];
 
 function NavBar() {
