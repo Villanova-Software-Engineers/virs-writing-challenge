@@ -6,6 +6,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
   const [isRunning, setIsRunning] = useState(false);
   const [description, setDescription] = useState('');
   const [sessionSavedToday, setSessionSavedToday] = useState(false);
+  const [savedMessage, setSavedMessage] = useState('');
   const [error, setError] = useState('');
 
   const startTimeRef = useRef(null);
@@ -17,24 +18,21 @@ function Timer({ onSessionSave, onTimerUpdate }) {
     return estDate.toISOString().split('T')[0];
   };
 
-  // Check if already saved today
   useEffect(() => {
     const sessions = JSON.parse(localStorage.getItem('writingSessions') || '[]');
     const todayDate = getESTDateString();
     const savedToday = sessions.some(session => session.date === todayDate);
     setSessionSavedToday(savedToday);
+    setSavedMessage(savedToday ? 'You can only log one session per day.' : '');
   }, []);
 
-  // Load saved state on mount
   useEffect(() => {
     const savedStartTime = localStorage.getItem('timerStartTime');
     const savedPausedTime = localStorage.getItem('timerPausedTime');
     const savedIsRunning = localStorage.getItem('timerIsRunning');
     const savedDescription = localStorage.getItem('timerDescription');
 
-    if (savedDescription) {
-      setDescription(savedDescription);
-    }
+    if (savedDescription) setDescription(savedDescription);
 
     if (savedStartTime) {
       startTimeRef.current = parseInt(savedStartTime, 10);
@@ -52,7 +50,6 @@ function Timer({ onSessionSave, onTimerUpdate }) {
     }
   }, []);
 
-  // Auto-stop at 11:59 PM EST and auto-reset at midnight
   useEffect(() => {
     const checkTimeLimits = () => {
       const now = new Date();
@@ -68,6 +65,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
       if (hours === 0 && minutes === 0) {
         handleReset();
         setSessionSavedToday(false);
+        setSavedMessage('');
       }
     };
 
@@ -75,7 +73,6 @@ function Timer({ onSessionSave, onTimerUpdate }) {
     return () => clearInterval(interval);
   }, [isRunning]);
 
-  // Timer interval
   useEffect(() => {
     let interval = null;
     if (isRunning) {
@@ -89,7 +86,6 @@ function Timer({ onSessionSave, onTimerUpdate }) {
     };
   }, [isRunning]);
 
-  // Notify parent of timer updates
   useEffect(() => {
     if (onTimerUpdate) onTimerUpdate(seconds);
   }, [seconds, onTimerUpdate]);
@@ -187,6 +183,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
     localStorage.setItem('writingSessions', JSON.stringify(sessions));
 
     setSessionSavedToday(true);
+    setSavedMessage('You can only save/log one session per day.');
     handleReset();
     setError('');
 
@@ -215,75 +212,81 @@ function Timer({ onSessionSave, onTimerUpdate }) {
                   ? 'bg-red-500 animate-pulse'
                   : 'bg-accent'
             }`} />
-            {sessionSavedToday ? 'Session Saved' : isRunning ? 'Session Started' : 'Ready'}
+            {sessionSavedToday ? 'Session Saved For Today' : isRunning ? 'Session Started' : 'Ready'}
           </span>
         </div>
 
-        {/* Timer display */}
-        <div className="text-6xl font-bold text-text tabular-nums my-4 font-mono">
-          {formatTime(seconds)}
-        </div>
+        {!sessionSavedToday && (
+          <>
+            {/* Timer display */}
+            <div className="text-6xl font-bold text-text tabular-nums my-4 font-mono">
+              {formatTime(seconds)}
+            </div>
 
-        {/* Controls */}
-        <div className="flex gap-3 mb-6">
-          <button
-            onClick={handleToggle}
-            disabled={sessionSavedToday}
-            className={`px-8 py-3 text-background rounded-lg text-base font-semibold transition-all ${
-              sessionSavedToday
-                ? 'bg-accent/50 cursor-not-allowed'
-                : isRunning
-                  ? 'bg-red-500 hover:bg-red-600 cursor-pointer'
-                  : 'bg-green-600 hover:bg-green-700 cursor-pointer'
-            }`}
-          >
-            {isRunning ? 'Stop' : 'Start'}
-          </button>
-          <button
-            onClick={handleReset}
-            className="px-6 py-3 bg-secondary text-text rounded-lg text-base font-semibold hover:bg-secondary/80 transition-all cursor-pointer"
-          >
-            Reset
-          </button>
-        </div>
+            {/* Controls */}
+            <div className="flex gap-3 mb-6">
+              <button
+                onClick={handleToggle}
+                className={`px-8 py-3 text-background rounded-lg text-base font-semibold transition-all ${
+                  isRunning
+                    ? 'bg-red-500 hover:bg-red-600 cursor-pointer'
+                    : 'bg-green-600 hover:bg-green-700 cursor-pointer'
+                }`}
+              >
+                {isRunning ? 'Stop' : 'Start'}
+              </button>
+              <button
+                onClick={handleReset}
+                className="px-6 py-3 bg-secondary text-text rounded-lg text-base font-semibold hover:bg-secondary/80 transition-all cursor-pointer"
+              >
+                Reset
+              </button>
+            </div>
 
-        {/* Error */}
-        {error && (
-          <div className="w-full max-w-md bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg mb-4">
-            {error}
-          </div>
+            {/* Error */}
+            {error && (
+              <div className="w-full max-w-md bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg mb-4">
+                {error}
+              </div>
+            )}
+
+            {/* Description + Save */}
+            <div className="w-full max-w-md">
+              <label className="block mb-1.5 font-semibold text-text text-sm">
+                Session Description
+                <span className="font-normal text-muted ml-1">(max 10 words)</span>
+              </label>
+              <input
+                type="text"
+                value={description}
+                onChange={handleDescriptionChange}
+                placeholder="What did you write about today?"
+                className="w-full p-3 text-sm rounded-lg border border-accent/30 focus:border-primary focus:outline-none"
+              />
+              <div className={`text-xs mt-1 text-right ${wordCount > 8 ? (wordCount > 10 ? 'text-red-500' : 'text-yellow-600') : 'text-muted'}`}>
+                {wordCount}/10 words
+              </div>
+              <button
+                onClick={handleSaveSession}
+                className="mt-3 py-3 text-background rounded-lg text-sm font-bold w-full transition-all bg-primary hover:opacity-90 cursor-pointer"
+              >
+                Save Session
+              </button>
+            </div>
+          </>
         )}
 
-        {/* Description + Save */}
-        <div className="w-full max-w-md">
-          <label className="block mb-1.5 font-semibold text-text text-sm">
-            Session Description
-            <span className="font-normal text-muted ml-1">(max 10 words)</span>
-          </label>
-          <input
-            type="text"
-            value={description}
-            onChange={handleDescriptionChange}
-            placeholder="What did you write about today?"
-            disabled={sessionSavedToday}
-            className="w-full p-3 text-sm rounded-lg border border-accent/30 focus:border-primary focus:outline-none disabled:opacity-40"
-          />
-          <div className={`text-xs mt-1 text-right ${wordCount > 8 ? (wordCount > 10 ? 'text-red-500' : 'text-yellow-600') : 'text-muted'}`}>
-            {wordCount}/10 words
+        {/* Save limit message — only shown after saving */}
+        {savedMessage && (
+          <div className="w-full max-w-md flex flex-col items-center gap-2 mt-2">
+            <div className="text-6xl font-bold text-text tabular-nums font-mono">
+              {formatTime(seconds)}
+            </div>
+            <p className="text-[#003366] text-lg font-bold text-center">
+              {savedMessage}
+            </p>
           </div>
-
-          <button
-            onClick={handleSaveSession}
-            disabled={sessionSavedToday}
-            className={`mt-3 py-3 text-background rounded-lg text-sm font-bold w-full transition-all ${
-              sessionSavedToday
-                ? 'bg-accent/50 cursor-not-allowed'
-                : 'bg-primary hover:opacity-90 cursor-pointer'
-            }`}
-          >
-            {sessionSavedToday ? 'Session Saved for Today' : 'Save Session'}
-          </button>
-        </div>
+        )}
       </div>
     </>
   );

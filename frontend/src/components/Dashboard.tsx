@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Flame,
   Loader2,
@@ -23,9 +24,15 @@ import type { MessageResponse } from "../types/api.types";
 
 // ── Mini Message Card ─────────────────────────────────────────────────────────
 function MiniMessageCard({ msg }: { msg: MessageResponse }) {
+  const navigate = useNavigate();
   const currentUserId = auth.currentUser?.uid || "";
   const hasLiked = msg.likes.includes(currentUserId);
   const likeMutation = useLikeMessage();
+
+  const handleCommentClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    navigate(`/messages?highlight=${encodeURIComponent(msg.id)}`);
+  };
 
   const timeAgo = (isoString: string): string => {
     const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
@@ -74,10 +81,14 @@ function MiniMessageCard({ msg }: { msg: MessageResponse }) {
           <ThumbsUp size={12} />
           {msg.likes.length > 0 && msg.likes.length}
         </button>
-        <span className="flex items-center gap-1 text-xs text-slate-400">
+        <button
+          onClick={handleCommentClick}
+          className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600"
+          title="Comment"
+        >
           <MessageSquare size={12} />
           {msg.comments.length > 0 && msg.comments.length}
-        </span>
+        </button>
       </div>
     </div>
   );
