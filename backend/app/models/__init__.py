@@ -1,6 +1,6 @@
 from .semester import Semester
 from .user import User
-from .message import Message, Comment, MessageCategory, message_likes, message_dislikes
+from .message import Message, Comment, message_likes
 from .streak import Streak, WritingSession
 
 __all__ = [
@@ -8,9 +8,7 @@ __all__ = [
     "User",
     "Message",
     "Comment",
-    "MessageCategory",
     "message_likes",
-    "message_dislikes",
     "Streak",
     "WritingSession",
 ]

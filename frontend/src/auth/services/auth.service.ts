@@ -112,9 +112,7 @@ export class AuthService {
         updateProfile(firebaseUser, { displayName: `${firstName} ${lastName}` }),
         this.createUserProfile(user),
       ]);
-      console.log('[AuthService] User profile created successfully in Firestore');
     } catch (error) {
-      console.error('[AuthService] Failed to create user profile:', error);
       // Still continue with signup even if Firestore fails
       // Backend will handle profile creation from Firebase Auth data
     }
@@ -177,17 +175,12 @@ export class AuthService {
       };
     }
 
-    console.log('[AuthService] Resending verification email to:', firebaseUser.email);
-    
     try {
       await sendEmailVerification(firebaseUser, {
         url: window.location.origin + '/auth/verify-email',
         handleCodeInApp: false,
       });
-      console.log('[AuthService] Verification email resent successfully');
     } catch (error: any) {
-      console.error('[AuthService] Failed to resend verification email:', error);
-      console.error('[AuthService] Error code:', error.code);
       throw error;
     }
     

@@ -1,0 +1,64 @@
+from sqlalchemy.orm import Session
+from datetime import date
+from typing import Optional
+from app.models import Streak
+from app.schemas.streak import StreakResponse
+
+
+def get_user_streak(user_id: int, db: Session) -> Optional[Streak]:
+    """Get user's streak record"""
+    return db.query(Streak).filter(Streak.user_id == user_id).first()
+
+
+def streak_to_response(streak: Optional[Streak]) -> StreakResponse:
+    """Convert Streak model to response schema"""
+    if not streak:
+        return StreakResponse(count=0, last_date=None)
+
+    return StreakResponse(
+        count=streak.count,
+        last_date=streak.last_date.isoformat() if streak.last_date else None,
+    )
+
+
+def update_user_streak(user_id: int, db: Session) -> Streak:
+    today = date.today()
+    streak = get_user_streak(user_id, db)
+
+    if not streak:
+        # Create new streak record
+        streak = Streak(
+            user_id=user_id,
+            count=1,
+            longest_streak=1,
+            last_date=today,
+        )
+        db.add(streak)
+        db.commit()
+        db.refresh(streak)
+        return streak
+
+    if streak.last_date == today:
+        return streak
+
+    # Calculate new streak count
+    new_count = streak.count
+    if streak.last_date:
+        delta = (today - streak.last_date).days
+        if delta == 1:
+            new_count = streak.count + 1  # consecutive day
+        else:
+            new_count = 1  # streak broken — restart
+    else:
+        new_count = 1
+
+    # Update streak
+    streak.count = new_count
+    streak.last_date = today
+    if new_count > streak.longest_streak:
+        streak.longest_streak = new_count
+
+    db.commit()
+    db.refresh(streak)
+
+    return streak
