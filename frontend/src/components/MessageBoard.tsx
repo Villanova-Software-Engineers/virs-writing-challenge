@@ -402,16 +402,11 @@ export default function MessageBoard() {
 
   const handlePost = () => {
     if (!content.trim()) return;
-    console.log("[MessageBoard] Posting message:", { content, category: "win" });
     createMutation.mutate(
       { content, category: "win" },
       {
-        onSuccess: (newMessage) => {
-          console.log("[MessageBoard] Message posted successfully:", newMessage);
+        onSuccess: () => {
           setContent("");
-        },
-        onError: (error) => {
-          console.error("[MessageBoard] Failed to post message:", error);
         },
       }
     );

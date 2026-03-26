@@ -161,18 +161,9 @@ export function useCreateMessage(
 
   return useMutation({
     mutationFn: async (data: MessageCreate) => {
-      console.log("[useCreateMessage] Sending POST request to /api/messages with data:", data);
-      try {
-        const result = await api.post<MessageResponse, MessageCreate>("/api/messages", data);
-        console.log("[useCreateMessage] POST request successful, response:", result);
-        return result;
-      } catch (error) {
-        console.error("[useCreateMessage] POST request failed:", error);
-        throw error;
-      }
+      return api.post<MessageResponse, MessageCreate>("/api/messages", data);
     },
     onSuccess: (newMessage) => {
-      console.log("[useCreateMessage] onSuccess called with message:", newMessage);
 
       // Update all infinite query caches - add to first page
       queryClient.setQueriesData<{ pages: MessageListResponse[]; pageParams: unknown[] }>(
