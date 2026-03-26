@@ -12,8 +12,6 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, authReady } from "../firebase/config";
 import type { ApiError } from "../types/api.types";
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
-
 // ── Custom API Error Class ──────────────────────────────────────────────────
 export class ApiClientError extends Error {
   public readonly status: number;
@@ -135,7 +133,7 @@ export async function apiClient<TResponse = unknown, TBody = unknown>(
   await authReady;
 
   // Build URL with query parameters
-  const url = new URL(`${API_BASE_URL}${path}`);
+  const url = new URL(`${import.meta.env.VITE_BACKEND_URL}${path}`);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {

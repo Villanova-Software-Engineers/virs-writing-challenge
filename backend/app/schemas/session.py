@@ -3,10 +3,10 @@ from typing import List, Optional
 
 
 class WritingSessionCreate(BaseModel):
-    duration: int  # in seconds
-    started_at: str  # ISO datetime string
-    ended_at: str  # ISO datetime string
-    description: Optional[str] = None  # Session description
+    duration: int 
+    started_at: str  
+    ended_at: str 
+    description: Optional[str] = None 
 
 
 class WritingSessionResponse(BaseModel):
@@ -21,4 +21,4 @@ class WritingSessionResponse(BaseModel):
 
 class WritingSessionsListResponse(BaseModel):
     sessions: List[WritingSessionResponse]
-    total_time: int  # Total time in seconds
+    total_time: int 

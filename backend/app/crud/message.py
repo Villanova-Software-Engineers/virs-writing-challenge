@@ -136,7 +136,6 @@ def get_message_by_id(message_id: int, db: Session) -> Optional[Message]:
 
 
 def update_message(message: Message, data: MessageUpdate, db: Session) -> Message:
-    """Update a message"""
     message.content = data.content.strip()
     db.commit()
     db.refresh(message)
@@ -144,13 +143,11 @@ def update_message(message: Message, data: MessageUpdate, db: Session) -> Messag
 
 
 def delete_message(message: Message, db: Session) -> None:
-    """Delete a message"""
     db.delete(message)
     db.commit()
 
 
 def toggle_message_like(message: Message, user: User, db: Session) -> Message:
-    """Toggle like on a message"""
     if user in message.liked_by:
         message.liked_by.remove(user)
     else:

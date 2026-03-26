@@ -19,10 +19,7 @@ async def get_leaderboard_route(
     current_user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """
-    Get the leaderboard rankings.
-    Rankings are based on total writing time, with streak as a tiebreaker.
-    """
+    
     entries, semester_id_result, semester_name = get_leaderboard(
         db,
         current_user.id,

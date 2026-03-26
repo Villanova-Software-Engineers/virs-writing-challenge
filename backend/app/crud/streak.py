@@ -6,12 +6,10 @@ from app.schemas.streak import StreakResponse
 
 
 def get_user_streak(user_id: int, db: Session) -> Optional[Streak]:
-    """Get user's streak record"""
     return db.query(Streak).filter(Streak.user_id == user_id).first()
 
 
 def streak_to_response(streak: Optional[Streak]) -> StreakResponse:
-    """Convert Streak model to response schema"""
     if not streak:
         return StreakResponse(count=0, last_date=None)
 
@@ -26,7 +24,6 @@ def update_user_streak(user_id: int, db: Session) -> Streak:
     streak = get_user_streak(user_id, db)
 
     if not streak:
-        # Create new streak record
         streak = Streak(
             user_id=user_id,
             count=1,
@@ -41,18 +38,16 @@ def update_user_streak(user_id: int, db: Session) -> Streak:
     if streak.last_date == today:
         return streak
 
-    # Calculate new streak count
     new_count = streak.count
     if streak.last_date:
         delta = (today - streak.last_date).days
         if delta == 1:
-            new_count = streak.count + 1  # consecutive day
+            new_count = streak.count + 1 
         else:
-            new_count = 1  # streak broken — restart
+            new_count = 1  
     else:
         new_count = 1
 
-    # Update streak
     streak.count = new_count
     streak.last_date = today
     if new_count > streak.longest_streak:

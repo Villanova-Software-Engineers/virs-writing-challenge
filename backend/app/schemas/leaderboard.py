@@ -6,7 +6,7 @@ class LeaderboardEntry(BaseModel):
     rank: int
     user_uid: str
     user_name: str
-    total_time: int  # in seconds
+    total_time: int 
     streak: int
     active_days: int
     is_current_user: bool

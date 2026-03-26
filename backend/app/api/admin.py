@@ -88,7 +88,6 @@ async def get_user(
     current_user: CurrentUser = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Get a specific user (admin only)"""
     user = get_user_by_id(user_id, db)
 
     if not user:
@@ -109,7 +108,6 @@ async def update_user(
     current_user: CurrentUser = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Update user information (admin only)"""
     user = get_user_by_id(user_id, db)
 
     if not user:
@@ -130,7 +128,6 @@ async def delete_user(
     current_user: CurrentUser = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Delete a user (admin only)"""
     user = get_user_by_id(user_id, db)
 
     if not user:
@@ -139,7 +136,6 @@ async def delete_user(
             detail="User not found"
         )
 
-    # Prevent deleting own account
     if user.id == current_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -160,7 +156,6 @@ async def list_all_sessions(
     current_user: CurrentUser = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """List all writing sessions across all users (admin only)"""
     sessions, total_time = get_all_sessions(db, limit, semester_id, user_id)
 
     return AdminSessionsListResponse(
@@ -178,7 +173,6 @@ async def admin_update_message(
     current_user: CurrentUser = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Update any message (admin only)"""
     if not data.content.strip():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Content cannot be empty")
 
@@ -199,7 +193,6 @@ async def admin_delete_message_route(
     current_user: CurrentUser = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Delete any message (admin only)"""
     message = get_message_by_id(message_id, db)
 
     if not message:
@@ -218,7 +211,6 @@ async def pin_message(
     current_user: CurrentUser = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Pin or unpin a message (admin only)"""
     message = get_message_by_id(message_id, db)
 
     if not message:
@@ -236,7 +228,6 @@ async def admin_delete_comment_route(
     current_user: CurrentUser = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Delete any comment (admin only)"""
     comment = get_comment_by_id(comment_id, db)
 
     if not comment:

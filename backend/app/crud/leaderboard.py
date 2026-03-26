@@ -77,10 +77,8 @@ def get_leaderboard(
             is_current_user=is_current,
         ))
 
-    # Ensure current user is in the list
     current_user_in_list = any(e.user_uid == current_user_uid for e in entries)
     if not current_user_in_list:
-        # Get current user's stats
         user = db.query(User).filter(User.id == current_user_id).first()
         streak = db.query(Streak).filter(Streak.user_id == current_user_id).first()
 

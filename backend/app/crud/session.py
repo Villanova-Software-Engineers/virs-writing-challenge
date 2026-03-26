@@ -7,7 +7,6 @@ from app.schemas.session import WritingSessionCreate, WritingSessionResponse
 
 
 def session_to_response(session: WritingSession) -> WritingSessionResponse:
-    """Convert WritingSession model to response schema"""
     return WritingSessionResponse(
         id=session.id,
         duration=session.duration,
@@ -24,11 +23,8 @@ def create_writing_session(
     user_id: int,
     db: Session
 ) -> WritingSession:
-    """Create a new writing session"""
-    # Get active semester
     semester = db.query(Semester).filter(Semester.is_active == True).first()
 
-    # Parse datetime strings
     started_at = datetime.fromisoformat(data.started_at.replace("Z", "+00:00"))
     ended_at = datetime.fromisoformat(data.ended_at.replace("Z", "+00:00"))
 
@@ -52,31 +48,20 @@ def get_user_sessions(
     limit: int = 20,
     semester_id: Optional[int] = None
 ) -> Tuple[List[WritingSession], int]:
-    """
-    Get user's writing sessions.
 
-    Returns: (sessions, total_time)
-    """
     query = db.query(WritingSession).filter(WritingSession.user_id == user_id)
 
     if semester_id:
         query = query.filter(WritingSession.semester_id == semester_id)
 
     sessions = query.order_by(desc(WritingSession.created_at)).limit(limit).all()
-
-    # Calculate total time
     total_time = sum(s.duration for s in sessions)
 
     return sessions, total_time
 
 
 def get_today_sessions(user_id: int, db: Session) -> Tuple[List[WritingSession], int]:
-    """
-    Get user's writing sessions for today (EST/EDT).
-
-    Returns: (sessions, total_time)
-    """
-    # EST is UTC-5 (or EDT is UTC-4 during daylight saving time)
+  
     est = timezone(timedelta(hours=-5))
     today_start = datetime.now(est).replace(hour=0, minute=0, second=0, microsecond=0)
 
