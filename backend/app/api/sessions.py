@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from typing import Optional
-from app.auth import get_current_user, CurrentUser
+from app.api.auth import get_current_user, require_semester_registration
+from app.schemas.auth import CurrentUser
 from app.core import limiter
 from app.core.database import get_db
 from app.schemas.session import (
@@ -24,7 +25,7 @@ router = APIRouter(prefix="/sessions", tags=["Sessions"])
 async def create_session(
     request: Request,
     data: WritingSessionCreate,
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: CurrentUser = Depends(require_semester_registration),
     db: Session = Depends(get_db),
 ):
     if data.duration <= 0:
@@ -49,7 +50,7 @@ async def get_sessions(
     request: Request,
     limit: int = 20,
     semester_id: Optional[int] = None,
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: CurrentUser = Depends(require_semester_registration),
     db: Session = Depends(get_db),
 ):
     """Get current user's writing sessions"""
@@ -65,7 +66,7 @@ async def get_sessions(
 @limiter.limit("100/minute;1000/hour")
 async def get_today_sessions_route(
     request: Request,
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: CurrentUser = Depends(require_semester_registration),
     db: Session = Depends(get_db),
 ):
     """Get current user's writing sessions for today (EST/EDT)"""

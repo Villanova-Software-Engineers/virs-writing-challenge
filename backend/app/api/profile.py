@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
-from app.auth import get_current_user, CurrentUser
+from app.api.auth import get_current_user, require_semester_registration
+from app.schemas.auth import CurrentUser
 from app.core import limiter
 from app.core.database import get_db
 from app.schemas.profile import UserProfileResponse, UserProfileUpdate, UserStats, UserStatsHistory
@@ -51,7 +52,7 @@ async def update_profile(
 @limiter.limit("100/minute;1000/hour")
 async def get_profile_stats(
     request: Request,
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: CurrentUser = Depends(require_semester_registration),
     db: Session = Depends(get_db),
 ):
     """Get the current user's writing statistics"""
@@ -62,7 +63,7 @@ async def get_profile_stats(
 @limiter.limit("60/minute;600/hour")
 async def get_profile_history(
     request: Request,
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: CurrentUser = Depends(require_semester_registration),
     db: Session = Depends(get_db),
 ):
     """Get the current user's historical statistics by semester"""
