@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
 import {
   Trophy,
   TrendingUp,
@@ -119,10 +118,9 @@ interface MessageCardProps {
   msg: MessageResponse;
   currentUserId: string;
   isAdmin: boolean;
-  highlightMessageId?: string | null;
 }
 
-function MessageCard({ msg, currentUserId, isAdmin, highlightMessageId }: MessageCardProps) {
+function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
   const meta = CATEGORY_META[msg.category as keyof typeof CATEGORY_META] ?? CATEGORY_META.win;
   const isOwner = msg.author_uid === currentUserId;
   const hasLiked = msg.likes.includes(currentUserId);
@@ -131,9 +129,6 @@ function MessageCard({ msg, currentUserId, isAdmin, highlightMessageId }: Messag
   const [editValue, setEditValue] = useState(msg.content);
   const [showComments, setShowComments] = useState(msg.comments.length > 0);
   const [commentInput, setCommentInput] = useState("");
-
-  const cardRef = useRef<HTMLDivElement>(null);
-  const commentInputRef = useRef<HTMLInputElement>(null);
 
   const likeMutation = useLikeMessage();
   const commentMutation = useAddComment();
@@ -184,16 +179,8 @@ function MessageCard({ msg, currentUserId, isAdmin, highlightMessageId }: Messag
     }
   };
 
-  useEffect(() => {
-    if (highlightMessageId === msg.id) {
-      setShowComments(true);
-      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      commentInputRef.current?.focus();
-    }
-  }, [highlightMessageId, msg.id]);
-
   return (
-    <div ref={cardRef} id={`message-${msg.id}`} className="bg-slate-100 rounded-xl shadow-sm border border-slate-200 p-4 hover:shadow-md transition-all duration-200">
+    <div className="bg-slate-100 dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 hover:shadow-md transition-all duration-200">
       {/* Header */}
       <div className="flex items-start gap-3 mb-3">
         {/* Avatar */}
@@ -335,7 +322,6 @@ function MessageCard({ msg, currentUserId, isAdmin, highlightMessageId }: Messag
                 </div>
                 <div className="flex-1 flex gap-2">
                   <input
-                    ref={commentInputRef}
                     value={commentInput}
                     onChange={(e) => setCommentInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handlePostComment()}
@@ -382,8 +368,6 @@ function MessageSkeleton() {
 export default function MessageBoard() {
   const [content, setContent] = useState("");
   const { isAdmin } = useAuth();
-  const [searchParams] = useSearchParams();
-  const highlightMessageId = searchParams.get("highlight");
 
   const {
     data,
@@ -493,7 +477,6 @@ export default function MessageBoard() {
                     msg={msg}
                     currentUserId={currentUserId}
                     isAdmin={isAdmin}
-                    highlightMessageId={highlightMessageId}
                   />
                 ))}
 

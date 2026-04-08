@@ -1,5 +1,4 @@
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   Flame,
   Loader2,
@@ -27,15 +26,9 @@ import type { MessageResponse } from "../types/api.types";
 
 // ── Mini Message Card ─────────────────────────────────────────────────────────
 function MiniMessageCard({ msg }: { msg: MessageResponse }) {
-  const navigate = useNavigate();
   const currentUserId = auth.currentUser?.uid || "";
   const hasLiked = msg.likes.includes(currentUserId);
   const likeMutation = useLikeMessage();
-
-  const handleCommentClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    navigate(`/messages?highlight=${encodeURIComponent(msg.id)}`);
-  };
 
   const timeAgo = (isoString: string): string => {
     const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
@@ -97,14 +90,10 @@ function MiniMessageCard({ msg }: { msg: MessageResponse }) {
           <ThumbsUp size={14} className={hasLiked ? "fill-current" : ""} />
           {msg.likes.length > 0 && msg.likes.length}
         </button>
-        <button
-          onClick={handleCommentClick}
-          className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600"
-          title="Comment"
-        >
-          <MessageSquare size={12} />
+        <span className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400">
+          <MessageSquare size={14} />
           {msg.comments.length > 0 && msg.comments.length}
-        </button>
+        </span>
       </div>
     </div>
   );
