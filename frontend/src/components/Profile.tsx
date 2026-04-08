@@ -19,21 +19,21 @@ function ProfileSkeleton() {
   return (
     <div className="bg-background rounded-xl shadow-lg p-8 animate-pulse">
       <div className="flex items-center justify-between mb-6">
-        <div className="h-8 bg-slate-200 rounded w-32" />
-        <div className="h-10 bg-slate-200 rounded w-20" />
+        <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-32" />
+        <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded w-20" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="space-y-4">
-          <div className="h-16 bg-slate-100 rounded-lg" />
-          <div className="h-16 bg-slate-100 rounded-lg" />
-          <div className="h-16 bg-slate-100 rounded-lg" />
+          <div className="h-16 bg-slate-100 dark:bg-slate-700 rounded-lg" />
+          <div className="h-16 bg-slate-100 dark:bg-slate-700 rounded-lg" />
+          <div className="h-16 bg-slate-100 dark:bg-slate-700 rounded-lg" />
         </div>
         <div className="md:col-span-2">
-          <div className="h-6 bg-slate-200 rounded w-40 mb-3" />
+          <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-40 mb-3" />
           <div className="grid grid-cols-3 gap-4">
-            <div className="h-24 bg-slate-100 rounded-xl" />
-            <div className="h-24 bg-slate-100 rounded-xl" />
-            <div className="h-24 bg-slate-100 rounded-xl" />
+            <div className="h-24 bg-slate-100 dark:bg-slate-700 rounded-xl" />
+            <div className="h-24 bg-slate-100 dark:bg-slate-700 rounded-xl" />
+            <div className="h-24 bg-slate-100 dark:bg-slate-700 rounded-xl" />
           </div>
         </div>
       </div>
@@ -91,33 +91,29 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen py-8 px-4">
-        <section className="max-w-4xl mx-auto w-full">
-          <ProfileSkeleton />
-        </section>
+      <div className="p-6 lg:p-8 min-h-full">
+        <ProfileSkeleton />
       </div>
     );
   }
 
   if (profileError) {
     return (
-      <div className="flex flex-col min-h-screen py-8 px-4">
-        <section className="max-w-4xl mx-auto w-full">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 flex items-center gap-4">
-            <AlertCircle className="text-red-500" size={24} />
-            <div>
-              <p className="text-red-800 font-medium">Failed to load profile</p>
-              <p className="text-red-600 text-sm">{profileError.message}</p>
-            </div>
+      <div className="p-6 lg:p-8 min-h-full">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 flex items-center gap-4">
+          <AlertCircle className="text-red-500 dark:text-red-400" size={24} />
+          <div>
+            <p className="text-red-800 dark:text-red-200 font-medium">Failed to load profile</p>
+            <p className="text-red-600 dark:text-red-300 text-sm">{profileError.message}</p>
           </div>
-        </section>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-screen py-8 px-4">
-      <section className="max-w-4xl mx-auto w-full">
+    <div className="p-6 lg:p-8 min-h-full bg-gray-50 dark:bg-gray-900">
+      <div className="space-y-6">
         <div className="bg-background rounded-xl shadow-lg p-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -148,7 +144,7 @@ export default function Profile() {
                     Save
                   </button>
                   <button
-                    className="flex items-center gap-1 px-4 py-2 bg-slate-200 text-text rounded-lg font-semibold hover:bg-slate-300 transition-colors"
+                    className="flex items-center gap-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-text rounded-lg font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
                     onClick={handleCancel}
                     disabled={updateMutation.isPending}
                   >
@@ -172,7 +168,7 @@ export default function Profile() {
                   onChange={handleChange}
                   disabled={!editing}
                   className={`w-full px-3 py-2 rounded-lg border ${
-                    editing ? "border-primary bg-white" : "border-transparent bg-slate-50"
+                    editing ? "border-primary bg-white dark:bg-slate-700" : "border-transparent bg-slate-50 dark:bg-slate-700"
                   } text-text focus:outline-none focus:ring-2 focus:ring-primary transition`}
                 />
               </div>
@@ -185,7 +181,7 @@ export default function Profile() {
                   onChange={handleChange}
                   disabled={!editing}
                   className={`w-full px-3 py-2 rounded-lg border ${
-                    editing ? "border-primary bg-white" : "border-transparent bg-slate-50"
+                    editing ? "border-primary bg-white dark:bg-slate-700" : "border-transparent bg-slate-50 dark:bg-slate-700"
                   } text-text focus:outline-none focus:ring-2 focus:ring-primary transition`}
                 />
               </div>
@@ -197,7 +193,7 @@ export default function Profile() {
                     name="department"
                     value={formData.department}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-primary bg-white text-text focus:outline-none focus:ring-2 focus:ring-primary transition"
+                    className="w-full px-3 py-2 rounded-lg border border-primary bg-white dark:bg-slate-700 text-text focus:outline-none focus:ring-2 focus:ring-primary transition"
                   >
                     <option value="">Select department</option>
                     {DEPARTMENTS.map((dept) => (
@@ -211,7 +207,7 @@ export default function Profile() {
                     name="department"
                     value={formData.department || "Not set"}
                     disabled
-                    className="w-full px-3 py-2 rounded-lg border border-transparent bg-slate-50 text-text"
+                    className="w-full px-3 py-2 rounded-lg border border-transparent bg-slate-50 dark:bg-slate-700 text-text"
                   />
                 )}
               </div>
@@ -222,7 +218,7 @@ export default function Profile() {
                   <input
                     value={profile.email}
                     disabled
-                    className="w-full px-3 py-2 rounded-lg border border-transparent bg-slate-50 text-muted"
+                    className="w-full px-3 py-2 rounded-lg border border-transparent bg-slate-50 dark:bg-slate-700 text-muted"
                   />
                 </div>
               )}
@@ -239,7 +235,7 @@ export default function Profile() {
             <div className="col-span-1 md:col-span-2">
               <h3 className="text-lg font-semibold text-text mb-3">Current Semester Stats</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-slate-50 rounded-xl p-4 shadow-sm text-center">
+                <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-4 shadow-sm text-center">
                   <div className="flex items-center justify-center gap-2 text-sm text-muted mb-1">
                     <Clock size={14} />
                     Total Time
@@ -249,7 +245,7 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 rounded-xl p-4 shadow-sm text-center">
+                <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-4 shadow-sm text-center">
                   <div className="flex items-center justify-center gap-2 text-sm text-muted mb-1">
                     <Flame size={14} className="text-orange-400" />
                     Longest Streak
@@ -259,7 +255,7 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 rounded-xl p-4 shadow-sm text-center">
+                <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-4 shadow-sm text-center">
                   <div className="flex items-center justify-center gap-2 text-sm text-muted mb-1">
                     <Calendar size={14} />
                     Active Days
@@ -272,14 +268,14 @@ export default function Profile() {
 
               {/* Current Streak */}
               {stats && stats.current_streak > 0 && (
-                <div className="mt-4 p-4 bg-orange-50 rounded-xl border border-orange-100">
+                <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800">
                   <div className="flex items-center gap-2">
-                    <Flame size={20} className="text-orange-500" fill="currentColor" />
-                    <span className="font-semibold text-orange-700">
+                    <Flame size={20} className="text-orange-500 dark:text-orange-400" fill="currentColor" />
+                    <span className="font-semibold text-orange-700 dark:text-orange-300">
                       Current Streak: {stats.current_streak} days
                     </span>
                     {stats.current_streak >= 7 && (
-                      <span className="text-sm text-orange-500">On fire!</span>
+                      <span className="text-sm text-orange-500 dark:text-orange-400">On fire!</span>
                     )}
                   </div>
                 </div>
@@ -293,26 +289,27 @@ export default function Profile() {
             {historyLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-slate-50 rounded-xl p-4 animate-pulse">
-                    <div className="h-5 bg-slate-200 rounded w-24 mb-2" />
-                    <div className="h-4 bg-slate-100 rounded w-32 mb-3" />
-                    <div className="h-4 bg-slate-100 rounded w-20" />
+                  <div key={i} className="bg-slate-50 dark:bg-slate-700 rounded-xl p-4 animate-pulse">
+                    <div className="h-5 bg-slate-200 dark:bg-slate-600 rounded w-24 mb-2" />
+                    <div className="h-4 bg-slate-100 dark:bg-slate-600 rounded w-32 mb-3" />
+                    <div className="h-4 bg-slate-100 dark:bg-slate-600 rounded w-20" />
                   </div>
                 ))}
               </div>
             ) : history && history.semesters.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {history.semesters.map((s) => (
-                  <div key={s.semester_id} className="bg-slate-50 rounded-xl p-4 shadow-sm">
+                  <div key={s.semester_id} className="bg-slate-50 dark:bg-slate-700 rounded-xl p-4 shadow-sm">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-semibold text-text">{s.semester_name}</div>
                         <div className="text-sm text-muted">
-                          {formatMinutes(s.total_time)} • {s.longest_streak}d streak
+                          {formatMinutes(s.total_time)}
+                          {s.longest_streak > 0 && ` • ${s.longest_streak}d streak`}
                         </div>
                       </div>
                     </div>
-                    <div className="mt-3 pt-3 border-t border-slate-200">
+                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
                       <div className="flex items-center gap-2 text-sm text-muted">
                         <Calendar size={12} />
                         <span>{s.active_days} active days</span>
@@ -322,14 +319,14 @@ export default function Profile() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 bg-slate-50 rounded-xl">
-                <Calendar className="mx-auto text-slate-300 mb-2" size={32} />
+              <div className="text-center py-8 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                <Calendar className="mx-auto text-slate-300 dark:text-slate-600 mb-2" size={32} />
                 <p className="text-muted">No historical data yet</p>
               </div>
             )}
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

@@ -111,6 +111,26 @@ export function clearTokenCache(): void {
   tokenExpiresAt = 0;
 }
 
+/**
+ * Clears all user-specific localStorage data on logout
+ * to prevent data leakage between different user accounts
+ */
+export function clearUserLocalStorage(): void {
+  // Clear all localStorage keys to prevent any data leakage between accounts
+  // We iterate through all keys and remove user-specific ones
+  const keysToCheck = Object.keys(localStorage);
+
+  keysToCheck.forEach(key => {
+    // Remove timer-related keys (both generic and user-specific)
+    if (key.startsWith('timerStartTime') ||
+        key.startsWith('timerPausedTime') ||
+        key.startsWith('timerIsRunning') ||
+        key.startsWith('timerDescription')) {
+      localStorage.removeItem(key);
+    }
+  });
+}
+
 // ── Request Types ───────────────────────────────────────────────────────────
 type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
