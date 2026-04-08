@@ -1,9 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
   --color-background: var(--background);
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
@@ -11,36 +12,36 @@
   --color-text: var(--text);
   --color-muted: var(--muted);
 }
-
+ 
 body {
-  @apply bg-gradient-to-br from-primary/50  via-neutral-100 to-primary/50
+  @apply bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50
 }
 
 .dark body {
-  @apply bg-gradient-to-br from-background via-primary/40 to-background
+  @apply bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900
 }
-
+ 
 input,
 textarea,
 select {
   color: var(--text);
   background-color: var(--background);
 }
-
+ 
 :root {
-  --background: oklch(100.00% 0.000 89.88);
-  --primary: oklch(56.70% 0.155 248.52);
-  --secondary: oklch(81.80% 0.080 225.19);
-  --accent: oklch(73.87% 0.015 238.09);
-  --text: oklch(11.83% 0.046 280.65);
-  --muted: oklch(10.11% 0.000 89.88);
+  --background: #ffffff;
+  --primary: #4f46e5;
+  --secondary: #6366f1;
+  --accent: #818cf8;
+  --text: #0f172a;
+  --muted: #64748b;
 }
 
 .dark {
-  --background: oklch(0.00% 0.000 0);
-  --primary: oklch(71.97% 0.156 243.43);
-  --secondary: oklch(56.70% 0.155 248.52);
-  --accent: oklch(44.70% 0.013 228.40);
-  --text: oklch(100% 0.000 89.88);
-  --muted: oklch(94.04% 0.022 291.80);
+  --background: #0f172a;
+  --primary: #818cf8;
+  --secondary: #6366f1;
+  --accent: #a5b4fc;
+  --text: #f8fafc;
+  --muted: #94a3b8;
 }

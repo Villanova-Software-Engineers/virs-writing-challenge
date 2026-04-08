@@ -14,13 +14,13 @@ function formatTime(totalSeconds: number): string {
 function getRankStyle(rank: number): string {
   switch (rank) {
     case 1:
-      return "bg-yellow-100 text-yellow-700 border-yellow-300";
+      return "bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-600";
     case 2:
-      return "bg-slate-100 text-slate-600 border-slate-300";
+      return "bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-500";
     case 3:
-      return "bg-orange-100 text-orange-700 border-orange-300";
+      return "bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-600";
     default:
-      return "bg-slate-50 text-slate-500 border-slate-200";
+      return "bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600";
   }
 }
 
@@ -41,8 +41,8 @@ function LeaderboardRow({ entry }: LeaderboardRowProps) {
 
   return (
     <tr
-      className={`border-b border-slate-100 transition-colors ${
-        entry.is_current_user ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-slate-50"
+      className={`border-b border-slate-100 dark:border-slate-700 transition-colors ${
+        entry.is_current_user ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-slate-50 dark:hover:bg-slate-800"
       }`}
     >
       <td className="px-6 py-4">
@@ -93,19 +93,19 @@ function LeaderboardRow({ entry }: LeaderboardRowProps) {
 function LeaderboardSkeleton() {
   return (
     <div className="bg-background rounded-xl shadow overflow-hidden animate-pulse">
-      <div className="p-4 border-b border-slate-100">
-        <div className="h-6 bg-slate-200 rounded w-48" />
+      <div className="p-4 border-b border-slate-100 dark:border-slate-700">
+        <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-48" />
       </div>
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-slate-100 dark:divide-slate-700">
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="flex items-center gap-4 px-6 py-4">
-            <div className="w-8 h-8 rounded-full bg-slate-200" />
+            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700" />
             <div className="flex-1">
-              <div className="h-4 bg-slate-200 rounded w-32" />
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-32" />
             </div>
-            <div className="h-4 bg-slate-100 rounded w-16" />
-            <div className="h-4 bg-slate-100 rounded w-20" />
-            <div className="h-4 bg-slate-100 rounded w-12" />
+            <div className="h-4 bg-slate-100 dark:bg-slate-700 rounded w-16" />
+            <div className="h-4 bg-slate-100 dark:bg-slate-700 rounded w-20" />
+            <div className="h-4 bg-slate-100 dark:bg-slate-700 rounded w-12" />
           </div>
         ))}
       </div>
@@ -117,7 +117,7 @@ export default function Leaderboard() {
   const { data: leaderboard, isLoading, error } = useLeaderboard();
 
   return (
-    <div className="p-8">
+    <div className="p-8 min-h-full bg-gray-50 dark:bg-gray-900">
       <div className="flex items-center gap-3 mb-8">
         <Trophy className="text-primary" size={32} />
         <h1 className="text-4xl font-bold text-text">Leaderboard</h1>
@@ -143,7 +143,7 @@ export default function Leaderboard() {
           {leaderboard && leaderboard.entries.length > 0 ? (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-accent/20 bg-slate-50">
+                <tr className="border-b border-accent/20 bg-slate-50 dark:bg-slate-800">
                   <th className="text-left text-sm font-semibold text-muted uppercase tracking-wide px-6 py-4">
                     Rank
                   </th>
@@ -169,8 +169,8 @@ export default function Leaderboard() {
             </table>
           ) : (
             <div className="text-center py-12">
-              <Trophy className="mx-auto text-slate-300 mb-3" size={48} />
-              <p className="text-slate-500">No rankings yet. Start writing to join the leaderboard!</p>
+              <Trophy className="mx-auto text-slate-300 dark:text-slate-600 mb-3" size={48} />
+              <p className="text-slate-500 dark:text-slate-400">No rankings yet. Start writing to join the leaderboard!</p>
             </div>
           )}
         </div>

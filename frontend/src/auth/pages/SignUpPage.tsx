@@ -1,7 +1,7 @@
 import React from 'react';
 import SignUpForm from '../components/SignUpForm';
 import ThemeToggle from '../components/ThemeToggle';
-import { FaComments, FaClock, FaFireAlt, FaTrophy, FaPen } from 'react-icons/fa';
+import { FaClock, FaFireAlt, FaTrophy, FaPen } from 'react-icons/fa';
 
 const SignUpPage: React.FC = () => {
   return (
@@ -9,56 +9,56 @@ const SignUpPage: React.FC = () => {
       <ThemeToggle />
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-background p-12 max-lg:hidden">
-        <div className="absolute -top-30 -right-22 size-90 rounded-full bg-primary/12 blur-[90px] opacity-50" />
-        <div className="absolute -bottom-40 -left-24 size-90 rounded-full bg-secondary/20 blur-[90px] opacity-50" />
+      <section className="relative overflow-hidden !bg-[#003366] dark:!bg-slate-900 p-12 max-lg:hidden flex items-center">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDEzNGg1MnYxNEgzNnptMCAxNmg1MnYxNEgzNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-60"></div>
+        <div className="absolute top-20 right-20 w-72 h-72 bg-blue-300/5 dark:bg-blue-400/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-cyan-300/5 dark:bg-cyan-400/5 rounded-full blur-3xl"></div>
 
         <div className="relative z-10 max-w-xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-2.5 text-[13px] text-text tracking-wide">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 dark:bg-white/10 backdrop-blur-sm px-4 py-2.5 text-[13px] font-semibold text-white shadow-lg border border-white/20 dark:border-white/10">
             <span>VIRS Writing Challenge</span>
-            <span className="text-primary">Villanova · Spring 2026</span>
+            <span className="opacity-90">Villanova · Spring 2026</span>
           </div>
 
-          <h1 className="mt-5 text-[clamp(34px,4vw,44px)] leading-tight font-bold">
-            Join the faculty writing community.
+          <h1 className="mt-8 text-[clamp(38px,4.5vw,52px)] leading-[1.1] font-black text-white">
+            Join the Writing Community
           </h1>
-          <p className="mt-4 max-w-xl text-[16px] leading-7 text-muted">
-            Create your account to start tracking writing sessions, building streaks, and staying
-            motivated alongside your Villanova colleagues—all in one transparent, semester-based platform.
+          <p className="mt-6 max-w-xl text-[18px] leading-[1.75] text-white/95 dark:text-white/90 font-medium">
+            Create your account to start tracking writing sessions, building streaks, and staying motivated alongside your Villanova colleagues.
           </p>
 
-          <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2.5 text-sm">
-            <span className="inline-flex items-center gap-2 text-text/90">
-              <FaPen className="text-base text-primary" aria-hidden="true" />
-              Daily Writing
-            </span>
-            <span className="inline-flex items-center gap-2 text-text/90">
-              <FaFireAlt className="text-base text-primary" aria-hidden="true" />
-              Streaks
-            </span>
-            <span className="inline-flex items-center gap-2 text-text/90">
-              <FaTrophy className="text-base text-primary" aria-hidden="true" />
-              Leaderboard
-            </span>
-            <span className="inline-flex items-center gap-2 text-text/90">
-              <FaComments className="text-base text-primary" aria-hidden="true" />
-              Message Board
-            </span>
-            <span className="inline-flex items-center gap-2 text-text/90">
-              <FaClock className="text-base text-primary" aria-hidden="true" />
-              Timer
-            </span>
+          <div className="mt-10 grid grid-cols-2 gap-4 max-w-lg">
+            <div className="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/15 dark:border-white/10">
+              <FaPen className="text-2xl text-white mb-2" aria-hidden="true" />
+              <div className="text-white font-bold text-sm">Daily Writing</div>
+              <div className="text-white/80 dark:text-white/70 text-xs mt-1">Track your progress</div>
+            </div>
+            <div className="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/15 dark:border-white/10">
+              <FaFireAlt className="text-2xl text-orange-300 dark:text-orange-400 mb-2" aria-hidden="true" />
+              <div className="text-white font-bold text-sm">Build Streaks</div>
+              <div className="text-white/80 dark:text-white/70 text-xs mt-1">Stay consistent</div>
+            </div>
+            <div className="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/15 dark:border-white/10">
+              <FaTrophy className="text-2xl text-yellow-300 dark:text-yellow-400 mb-2" aria-hidden="true" />
+              <div className="text-white font-bold text-sm">Leaderboard</div>
+              <div className="text-white/80 dark:text-white/70 text-xs mt-1">Friendly competition</div>
+            </div>
+            <div className="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/15 dark:border-white/10">
+              <FaClock className="text-2xl text-blue-200 dark:text-blue-300 mb-2" aria-hidden="true" />
+              <div className="text-white font-bold text-sm">Timer Feature</div>
+              <div className="text-white/80 dark:text-white/70 text-xs mt-1">Time your sessions</div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Sign-up panel */}
       <section className="flex items-center justify-center p-12 max-lg:p-6 overflow-y-auto">
-        <div className="w-full max-w-[560px] rounded-[22px] border border-accent/20 bg-background p-7 shadow-xl backdrop-blur-xl">
-          <div className="mb-4">
-            <h2 className="mt-2.5 mb-1.5 text-[26px] font-bold">Create your account</h2>
-            <p className="text-muted">
-              Join your Villanova cohort for the writing challenge.
+        <div className="w-full max-w-md">
+          <div className="mb-9">
+            <h2 className="mb-2.5 text-4xl font-bold text-text">Sign Up</h2>
+            <p className="ml-1 text-base text-muted">
+              Enter your information to create an account!
             </p>
           </div>
 

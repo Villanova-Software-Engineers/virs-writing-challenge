@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import InputField from './HorizonInputField';
+import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaShieldAlt, FaBuilding, FaCheckCircle } from 'react-icons/fa';
 import { useFormValidation } from '../hooks/useFormValidation';
 import { AuthService } from '../services/auth.service';
 import { DEPARTMENTS } from "../../constants/departments";
@@ -28,6 +28,8 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [sentToEmail, setSentToEmail] = useState('');
   const [signUpMessage, setSignUpMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordChecks, setPasswordChecks] = useState({
     hasUppercase: false,
     hasLowercase: false,
@@ -179,7 +181,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
           &#9993;
         </div>
         <h3 className="text-lg font-bold text-text">Check your email</h3>
-        <p className="max-w-sm rounded-[12px] border border-green-400/30 bg-green-500/5 px-3 py-2 text-sm text-green-700">
+        <p className="max-w-sm rounded-xl border border-green-400/30 bg-green-50 dark:bg-green-900/20 px-3 py-2 text-sm text-green-700 dark:text-green-300">
           {signUpMessage}
         </p>
         <p className="max-w-sm text-sm text-muted">
@@ -189,7 +191,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="mt-2 w-full rounded-[14px] bg-gradient-to-r from-primary to-primary/75 px-3 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-primary/20 transition-transform hover:-translate-y-px hover:shadow-xl hover:shadow-primary/25 active:translate-y-0"
+          className="mt-2 w-full rounded-xl bg-primary py-3.5 text-base font-medium text-white transition duration-200 hover:bg-primary/90 active:bg-primary/80"
         >
           Go to sign in
         </button>
@@ -198,174 +200,252 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-1.5 flex flex-col gap-3.5">
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <InputField
-            variant="auth"
-            label="First name"
-            id="firstName"
-            type="text"
-            placeholder="Jane"
-            value={formData.firstName}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            state={errors.firstName ? 'error' : undefined}
-            disabled={isLoading}
-          />
-          {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
+          <label htmlFor="firstName" className="block text-sm font-medium text-text mb-2">
+            First Name
+          </label>
+          <div className="relative">
+            <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
+            <input
+              id="firstName"
+              type="text"
+              placeholder="Jane"
+              value={formData.firstName}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              disabled={isLoading}
+              className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-text focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 ${
+                errors.firstName
+                  ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-600'
+                  : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+              }`}
+            />
+          </div>
+          {errors.firstName && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.firstName}</p>}
         </div>
 
         <div>
-          <InputField
-            variant="auth"
-            label="Last name"
-            id="lastName"
-            type="text"
-            placeholder="Doe"
-            value={formData.lastName}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            state={errors.lastName ? 'error' : undefined}
-            disabled={isLoading}
-          />
-          {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
+          <label htmlFor="lastName" className="block text-sm font-medium text-text mb-2">
+            Last Name
+          </label>
+          <div className="relative">
+            <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
+            <input
+              id="lastName"
+              type="text"
+              placeholder="Doe"
+              value={formData.lastName}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              disabled={isLoading}
+              className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-text focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 ${
+                errors.lastName
+                  ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-600'
+                  : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+              }`}
+            />
+          </div>
+          {errors.lastName && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.lastName}</p>}
         </div>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <InputField
-          variant="auth"
-          label="Work email"
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          value={formData.email}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          state={errors.email ? 'error' : undefined}
-          disabled={isLoading}
-        />
-        {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <InputField
-          variant="auth"
-          label="Password"
-          id="password"
-          type="password"
-          placeholder="Min. 8 characters"
-          value={formData.password}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          state={errors.password ? 'error' : undefined}
-          disabled={isLoading}
-        />
-        {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
-        {formData.password && (
-          <div className="flex flex-col gap-1 text-xs">
-            <div className={`flex items-center gap-2 ${passwordChecks.hasUppercase ? 'text-green-600' : 'text-muted'}`}>
-              <span>{passwordChecks.hasUppercase ? '✓' : '○'}</span> At least 1 uppercase letter
-            </div>
-            <div className={`flex items-center gap-2 ${passwordChecks.hasLowercase ? 'text-green-600' : 'text-muted'}`}>
-              <span>{passwordChecks.hasLowercase ? '✓' : '○'}</span> At least 1 lowercase letter
-            </div>
-            <div className={`flex items-center gap-2 ${passwordChecks.hasNumber ? 'text-green-600' : 'text-muted'}`}>
-              <span>{passwordChecks.hasNumber ? '✓' : '○'}</span> At least 1 number
-            </div>
-            <div className={`flex items-center gap-2 ${passwordChecks.hasSpecial ? 'text-green-600' : 'text-muted'}`}>
-              <span>{passwordChecks.hasSpecial ? '✓' : '○'}</span> At least 1 special character
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <InputField
-          variant="auth"
-          label="Confirm password"
-          id="confirmPassword"
-          type="password"
-          placeholder="Re-enter password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          state={errors.confirmPassword ? 'error' : undefined}
-          disabled={isLoading}
-        />
-        {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
-        {formData.confirmPassword && (
-          <div className={`flex items-center gap-2 text-xs ${confirmPasswordMatch ? 'text-green-600' : 'text-muted'}`}>
-            <span>{confirmPasswordMatch ? '✓' : '○'}</span> Passwords match
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="department" className="block text-xs font-semibold text-muted tracking-wide">
-          Department <span className="text-red-500">*</span>
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-text mb-2">
+          Work Email
         </label>
-        <select
-          id="department"
-          value={formData.department}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          disabled={isLoading}
-          required
-          className={`w-full rounded-[14px] border bg-background px-3.5 py-3 text-sm text-text transition-all hover:border-primary/40 focus:border-primary focus:shadow-[0_0_0_4px_rgba(0,75,145,0.18)] focus:outline-none ${
-            errors.department ? 'border-red-400/50 shadow-[0_0_0_4px_rgba(248,113,113,0.12)]' : 'border-accent/20'
-          } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
-        >
-          <option value="">Select a department</option>
-          {DEPARTMENTS.map((dept) => (
-            <option key={dept} value={dept}>
-              {dept}
-            </option>
-          ))}
-        </select>
-        {errors.department && <p className="text-xs text-red-500">{errors.department}</p>}
+        <div className="relative">
+          <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
+          <input
+            id="email"
+            type="email"
+            placeholder="mail@example.com"
+            value={formData.email}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            disabled={isLoading}
+            className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-text focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 ${
+              errors.email
+                ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-600'
+                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+            }`}
+          />
+        </div>
+        {errors.email && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
+      </div>
+
+      <div>
+        <label htmlFor="department" className="block text-sm font-medium text-text mb-2">
+          Department
+        </label>
+        <div className="relative">
+          <FaBuilding className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
+          <select
+            id="department"
+            value={formData.department}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            disabled={isLoading}
+            className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-text focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 ${
+              errors.department
+                ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-600'
+                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+            }`}
+          >
+            <option value="">Select a department</option>
+            {DEPARTMENTS.map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
+          </select>
+        </div>
+        {errors.department && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.department}</p>}
       </div>
 
       {formData.department === 'Other' && (
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="customDepartment" className="block text-xs font-semibold text-muted tracking-wide">
-            Enter your department <span className="text-red-500">*</span>
+        <div>
+          <label htmlFor="customDepartment" className="block text-sm font-medium text-text mb-2">
+            Enter your department
           </label>
-          <InputField
-            variant="auth"
-            label=""
-            id="customDepartment"
-            type="text"
-            placeholder="e.g., Research & Development"
-            value={formData.customDepartment}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            state={errors.customDepartment ? 'error' : undefined}
-            disabled={isLoading}
-          />
-          {errors.customDepartment && <p className="text-xs text-red-500">{errors.customDepartment}</p>}
+          <div className="relative">
+            <FaBuilding className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
+            <input
+              id="customDepartment"
+              type="text"
+              placeholder="e.g., Research & Development"
+              value={formData.customDepartment}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              disabled={isLoading}
+              className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-text focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 ${
+                errors.customDepartment
+                  ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-600'
+                  : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+              }`}
+            />
+          </div>
+          {errors.customDepartment && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.customDepartment}</p>}
         </div>
       )}
+
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-text mb-2">
+          Password
+        </label>
+        <div className="relative">
+          <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
+          <input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Min. 8 characters"
+            value={formData.password}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            disabled={isLoading}
+            className={`w-full pl-10 pr-12 py-3 rounded-xl border bg-background text-text focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 ${
+              errors.password
+                ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-600'
+                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+            }`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-text transition-colors duration-200"
+            disabled={isLoading}
+          >
+            {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+          </button>
+        </div>
+
+        {formData.password && (
+          <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+            <div className={`flex items-center gap-1 ${passwordChecks.hasUppercase ? 'text-green-600 dark:text-green-400' : 'text-muted'}`}>
+              <FaCheckCircle size={12} />
+              Uppercase letter
+            </div>
+            <div className={`flex items-center gap-1 ${passwordChecks.hasLowercase ? 'text-green-600 dark:text-green-400' : 'text-muted'}`}>
+              <FaCheckCircle size={12} />
+              Lowercase letter
+            </div>
+            <div className={`flex items-center gap-1 ${passwordChecks.hasNumber ? 'text-green-600 dark:text-green-400' : 'text-muted'}`}>
+              <FaCheckCircle size={12} />
+              Number
+            </div>
+            <div className={`flex items-center gap-1 ${passwordChecks.hasSpecial ? 'text-green-600 dark:text-green-400' : 'text-muted'}`}>
+              <FaCheckCircle size={12} />
+              Special character
+            </div>
+          </div>
+        )}
+
+        {errors.password && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>}
+      </div>
+
+      <div>
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-text mb-2">
+          Confirm Password
+        </label>
+        <div className="relative">
+          <FaShieldAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
+          <input
+            id="confirmPassword"
+            type={showConfirmPassword ? 'text' : 'password'}
+            placeholder="Re-enter password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            disabled={isLoading}
+            className={`w-full pl-10 pr-12 py-3 rounded-xl border bg-background text-text focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 ${
+              errors.confirmPassword
+                ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-600'
+                : formData.confirmPassword && confirmPasswordMatch
+                ? 'border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-600'
+                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+            }`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-text transition-colors duration-200"
+            disabled={isLoading}
+          >
+            {showConfirmPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+          </button>
+        </div>
+        {errors.confirmPassword && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.confirmPassword}</p>}
+      </div>
 
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full rounded-[14px] bg-gradient-to-r from-primary to-primary/75 px-3 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-primary/20 transition-transform hover:-translate-y-px hover:shadow-xl hover:shadow-primary/25 active:translate-y-0 disabled:opacity-65 disabled:shadow-none"
+        className="w-full rounded-xl bg-primary py-3.5 text-base font-medium text-white transition duration-200 hover:bg-primary/90 active:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isLoading ? 'Creating your account…' : 'Create account'}
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-2">
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            Creating account...
+          </div>
+        ) : (
+          'Create Account'
+        )}
       </button>
 
-      <p className="text-center text-sm text-muted">
-        Already have an account?{' '}
+      <div className="mt-4">
+        <span className="text-sm font-medium text-text">
+          Already have an account?
+        </span>
         <button
           type="button"
           onClick={() => navigate('/auth/sign-in')}
-          className="border-none bg-transparent p-0 font-semibold text-primary cursor-pointer"
+          className="ml-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          disabled={isLoading}
         >
-          Sign in
+          Sign in here
         </button>
-      </p>
+      </div>
     </form>
   );
 };

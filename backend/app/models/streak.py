@@ -11,11 +11,10 @@ class Streak(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
     count = Column(Integer, default=0, nullable=False)
     longest_streak = Column(Integer, default=0, nullable=False)
-    last_date = Column(Date, nullable=True)  # Last date user wrote
+    last_date = Column(Date, nullable=True)  
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Relationships
     user = relationship("User", back_populates="streak")
 
     def __repr__(self):
@@ -28,13 +27,12 @@ class WritingSession(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     semester_id = Column(Integer, ForeignKey("semesters.id", ondelete="SET NULL"), nullable=True, index=True)
-    duration = Column(Integer, nullable=False)  # Duration in seconds
-    description = Column(String(255), nullable=True)  # Session description (max 10 words)
+    duration = Column(Integer, nullable=False) 
+    description = Column(String(255), nullable=True)  
     started_at = Column(DateTime(timezone=True), nullable=False)
     ended_at = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    # Relationships
     user = relationship("User", back_populates="writing_sessions")
 
     def __repr__(self):

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/config";
-import { clearTokenCache } from "../../services/apiClient";
+import { clearTokenCache, clearUserLocalStorage } from "../../services/apiClient";
 import { CalendarDays, Users, Clock, Archive, ArrowLeft, ShieldCheck } from "lucide-react";
 
 const adminNavItems = [
@@ -43,6 +43,7 @@ function AdminNav({ activeId, onSelect }) {
   const handleLogout = async () => {
     try {
       clearTokenCache();
+      clearUserLocalStorage();
       await signOut(auth);
       navigate("/auth/sign-in");
     } catch (error) {
@@ -59,10 +60,10 @@ function AdminNav({ activeId, onSelect }) {
   };
 
   return (
-    <nav className="h-full bg-primary flex flex-col flex-shrink-0 w-48">
+    <nav className="h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 flex flex-col flex-shrink-0 w-48">
       {/* Logo / Brand */}
-      <div className="flex items-center h-14 px-4 border-b border-background/10 flex-shrink-0">
-        <span className="text-background font-bold text-lg whitespace-nowrap">
+      <div className="flex items-center h-14 px-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+        <span className="text-blue-700 dark:text-blue-400 font-bold text-lg whitespace-nowrap">
           VIRS Admin
         </span>
       </div>
@@ -77,27 +78,27 @@ function AdminNav({ activeId, onSelect }) {
               onClick={() => handleNavClick(item.id)}
               className={`flex items-center gap-2.5 px-3 py-2 mx-1 rounded-lg transition-colors whitespace-nowrap text-left ${
                 isActive
-                  ? "bg-background/20 text-background"
-                  : "text-background/60 hover:text-background hover:bg-background/10"
+                  ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium"
+                  : "text-slate-600 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800"
               }`}
             >
               {item.icon}
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className="text-sm font-medium">{item.label}</span>
             </button>
           );
         })}
       </div>
 
       {/* Logout */}
-      <div className="border-t border-background/10 py-3 flex-shrink-0">
+      <div className="border-t border-slate-200 dark:border-slate-700 py-3 flex-shrink-0">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2.5 px-3 py-2 mx-1 rounded-lg text-background/60 hover:text-background hover:bg-background/10 transition-colors whitespace-nowrap w-[calc(100%-0.5rem)] cursor-pointer"
+          className="flex items-center gap-2.5 px-3 py-2 mx-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors whitespace-nowrap w-[calc(100%-0.5rem)] cursor-pointer"
         >
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          <span className="text-xs font-medium">Logout</span>
+          <span className="text-sm font-medium">Logout</span>
         </button>
       </div>
     </nav>

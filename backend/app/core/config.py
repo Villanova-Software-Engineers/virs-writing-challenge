@@ -9,6 +9,7 @@ class Settings:
         self.database_url: str = os.getenv("DATABASE_URL", "")
         self.firebase_cred_path: str = os.getenv("FIREBASE_CRED_PATH", "")
         self.project_name: str = "VIRS-Writing-Challenge"
+        self.debug: bool = os.getenv("DEBUG", "false").lower() == "true"
 
         cors_env = os.getenv("CORS_ORIGINS", "")
         if cors_env:
@@ -22,6 +23,8 @@ class Settings:
                 "http://127.0.0.1:5173",
                 "http://127.0.0.1:5174",
                 "http://127.0.0.1:3000",
+                "https://virs-two.vercel.app",
+                "https://virs-writing-challenge.vercel.app"
             ]
 
 settings = Settings()

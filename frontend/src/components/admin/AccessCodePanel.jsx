@@ -100,7 +100,7 @@ function AccessCodePanel() {
 
   if (loadingActive || loadingAll) {
     return (
-      <AdminSection title="Semester Access Codes" description="Manage semester access codes for student enrollment.">
+      <AdminSection title="Semester Access Codes" description="Manage semester access codes for user enrollment.">
         <div className="flex items-center justify-center py-8">
           <Loader2 className="animate-spin text-primary" size={24} />
         </div>
@@ -111,7 +111,7 @@ function AccessCodePanel() {
   return (
     <AdminSection
       title="Semester Access Codes"
-      description="Manage semester access codes for student enrollment."
+      description="Manage semester access codes for user enrollment."
       actions={
         !showCreateForm && !activeSemester && (
           <button
@@ -243,7 +243,7 @@ function AccessCodePanel() {
               <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3">
                 <div>
                   <div className="text-lg font-mono text-text font-bold">{activeSemester.access_code}</div>
-                  <div className="text-xs text-green-700 mt-1">Active - Students can join with this code</div>
+                  <div className="text-xs text-green-700 mt-1">Active - Users can join with this code</div>
                 </div>
                 <div className="flex gap-2">
                   <button
