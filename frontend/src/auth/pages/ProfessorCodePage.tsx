@@ -21,10 +21,10 @@ const ProfessorCodePage: React.FC = () => {
   useEffect(() => {
     if (profile?.is_admin) {
       // Admins don't need to join a semester - skip to dashboard
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     } else if (profile?.current_semester?.is_active) {
-      // User already joined, redirect to dashboard
-      navigate('/dashboard');
+      // User already joined, redirect to success page
+      navigate('/auth/semester-success', { replace: true });
     }
   }, [profile, navigate]);
 
@@ -45,7 +45,8 @@ const ProfessorCodePage: React.FC = () => {
         semesterId: activeSemester.id,
         accessCode: accessCode.trim(),
       });
-      navigate('/dashboard');
+      // Navigate to success page after joining
+      navigate('/auth/semester-success', { replace: true });
     } catch (err: any) {
       setError(err.message || 'Invalid access code. Please try again.');
     }

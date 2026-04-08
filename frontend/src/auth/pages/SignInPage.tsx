@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaComments, FaFireAlt, FaShieldAlt, FaTrophy, FaPen } from 'react-icons/fa';
-import InputField from '../components/HorizonInputField';
+import { FaComments, FaFireAlt, FaShieldAlt, FaTrophy, FaPen, FaEye, FaEyeSlash, FaEnvelope, FaLock } from 'react-icons/fa';
 import { AuthService } from '../services/auth.service';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -12,6 +11,7 @@ const SignInPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const validate = (): boolean => {
     const newErrors: typeof errors = {};
@@ -55,128 +55,159 @@ const SignInPage: React.FC = () => {
       <ThemeToggle />
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-background p-12 max-lg:p-8">
-        <div className="absolute -top-30 -right-22 size-90 rounded-full bg-primary/12 blur-[90px] opacity-50" />
-        <div className="absolute -bottom-40 -left-24 size-90 rounded-full bg-secondary/20 blur-[90px] opacity-50" />
+      <section className="relative overflow-hidden !bg-[#003366] dark:!bg-slate-900 p-12 max-lg:p-8 flex items-center">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDEzNGg1MnYxNEgzNnptMCAxNmg1MnYxNEgzNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-60"></div>
+        <div className="absolute top-20 right-20 w-72 h-72 bg-blue-300/5 dark:bg-blue-400/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-cyan-300/5 dark:bg-cyan-400/5 rounded-full blur-3xl"></div>
 
         <div className="relative z-10 max-w-xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-2.5 text-[13px] text-text tracking-wide">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 dark:bg-white/10 backdrop-blur-sm px-4 py-2.5 text-[13px] font-semibold text-white shadow-lg border border-white/20 dark:border-white/10">
             <span>VIRS Writing Challenge</span>
-            <span className="text-primary">Villanova · Spring 2026</span>
+            <span className="opacity-90">Villanova · Spring 2026</span>
           </div>
 
-          <h1 className="mt-5 text-[clamp(34px,4vw,44px)] leading-tight font-bold">
-            Villanova Writing Tracker for faculty &amp; post-docs.
+          <h1 className="mt-8 text-[clamp(38px,4.5vw,52px)] leading-[1.1] font-black text-white">
+            Track Your Writing Journey
           </h1>
-          <p className="mt-4 max-w-xl text-[16px] leading-7 text-muted">
-            Track daily writing sessions, build streaks, and stay motivated alongside your Villanova colleagues—all in one
-            simple, transparent, semester-based platform built on trust.
+          <p className="mt-6 max-w-xl text-[18px] leading-[1.75] text-white/95 dark:text-white/90 font-medium">
+            Join Villanova faculty and post-docs in building consistent writing habits. Track sessions, celebrate streaks, and stay motivated with your academic community.
           </p>
 
-          <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2.5 text-sm">
-            <span className="inline-flex items-center gap-2 text-text/90">
-              <FaPen className="text-base text-primary" aria-hidden="true" />
-              Daily Writing
-            </span>
-            <span className="inline-flex items-center gap-2 text-text/90">
-              <FaFireAlt className="text-base text-primary" aria-hidden="true" />
-              Streaks
-            </span>
-            <span className="inline-flex items-center gap-2 text-text/90">
-              <FaTrophy className="text-base text-primary" aria-hidden="true" />
-              Leaderboard
-            </span>
-            <span className="inline-flex items-center gap-2 text-text/90">
-              <FaComments className="text-base text-primary" aria-hidden="true" />
-              Message Board
-            </span>
-            <span className="inline-flex items-center gap-2 text-text/90">
-              <FaShieldAlt className="text-base text-primary" aria-hidden="true" />
-              Admin Control
-            </span>
+          <div className="mt-10 grid grid-cols-2 gap-4 max-w-lg">
+            <div className="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/15 dark:border-white/10">
+              <FaPen className="text-2xl text-white mb-2" aria-hidden="true" />
+              <div className="text-white font-bold text-sm">Daily Writing</div>
+              <div className="text-white/80 dark:text-white/70 text-xs mt-1">Track your progress</div>
+            </div>
+            <div className="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/15 dark:border-white/10">
+              <FaFireAlt className="text-2xl text-orange-300 dark:text-orange-400 mb-2" aria-hidden="true" />
+              <div className="text-white font-bold text-sm">Build Streaks</div>
+              <div className="text-white/80 dark:text-white/70 text-xs mt-1">Stay consistent</div>
+            </div>
+            <div className="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/15 dark:border-white/10">
+              <FaTrophy className="text-2xl text-yellow-300 dark:text-yellow-400 mb-2" aria-hidden="true" />
+              <div className="text-white font-bold text-sm">Leaderboard</div>
+              <div className="text-white/80 dark:text-white/70 text-xs mt-1">Friendly competition</div>
+            </div>
+            <div className="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/15 dark:border-white/10">
+              <FaComments className="text-2xl text-blue-200 dark:text-blue-300 mb-2" aria-hidden="true" />
+              <div className="text-white font-bold text-sm">Community</div>
+              <div className="text-white/80 dark:text-white/70 text-xs mt-1">Connect & share</div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Sign-in panel */}
       <section className="flex items-center justify-center p-12 max-lg:p-6">
-        <div className="w-full max-w-[560px] rounded-[22px] border border-accent/20 bg-background p-7 shadow-xl backdrop-blur-xl">
-          <div className="mb-4">
-            <h2 className="mt-2.5 mb-1.5 text-[26px] font-bold">Sign in to your account</h2>
-            <p className="text-muted">
-              Enter your credentials to access the writing challenge.
+        <div className="w-full max-w-md">
+          <div className="mb-9">
+            <h2 className="mb-2.5 text-4xl font-bold text-text">Sign In</h2>
+            <p className="ml-1 text-base text-muted">
+              Enter your email and password to sign in!
             </p>
           </div>
 
           {errors.general && (
-            <div className="mb-3 rounded-[14px] border border-red-400/30 bg-red-500/5 p-3 text-[13px] text-red-600">
-              {errors.general}
+            <div className="mb-6 rounded-xl border border-red-400/30 bg-red-50 dark:bg-red-900/20 p-4 flex items-center gap-3">
+              <span className="text-red-700 dark:text-red-300 text-sm">{errors.general}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-1.5 flex flex-col gap-3.5">
-            <div className="flex flex-col gap-1.5">
-              <InputField
-                variant="auth"
-                label="Email"
-                id="signInEmail"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); setErrors((prev) => ({ ...prev, email: '' })); }}
-                state={errors.email ? 'error' : undefined}
-                disabled={isLoading}
-              />
-              {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="signInEmail" className="block text-sm font-medium text-text mb-2">
+                Email*
+              </label>
+              <div className="relative">
+                <FaEnvelope className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
+                <input
+                  id="signInEmail"
+                  type="email"
+                  placeholder="mail@example.com"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setErrors((prev) => ({ ...prev, email: '' })); }}
+                  disabled={isLoading}
+                  className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-background text-text focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 ${
+                    errors.email
+                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-600 focus:ring-red-100'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                  }`}
+                />
+              </div>
+              {errors.email && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <InputField
-                variant="auth"
-                label="Password"
-                id="signInPassword"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); setErrors((prev) => ({ ...prev, password: '' })); }}
-                state={errors.password ? 'error' : undefined}
+            <div>
+              <label htmlFor="signInPassword" className="block text-sm font-medium text-text mb-2">
+                Password*
+              </label>
+              <div className="relative">
+                <FaLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
+                <input
+                  id="signInPassword"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Min. 8 characters"
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setErrors((prev) => ({ ...prev, password: '' })); }}
+                  disabled={isLoading}
+                  className={`w-full pl-12 pr-14 py-3.5 rounded-xl border bg-background text-text focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 ${
+                    errors.password
+                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-600 focus:ring-red-100'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted hover:text-text transition-colors duration-200 p-1 rounded-md"
+                  disabled={isLoading}
+                >
+                  {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+                </button>
+              </div>
+              {errors.password && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.password}</p>}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => navigate('/auth/forgot-password')}
+                className="text-sm text-primary hover:text-primary/80 font-semibold transition-colors"
                 disabled={isLoading}
-              />
-              {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
+              >
+                Forgot password?
+              </button>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-[14px] bg-gradient-to-r from-primary to-primary/75 px-3 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-primary/20 transition-transform hover:-translate-y-px hover:shadow-xl hover:shadow-primary/25 active:translate-y-0 disabled:opacity-65 disabled:shadow-none"
+              className="w-full rounded-xl bg-primary py-3.5 text-base font-medium text-white transition duration-200 hover:bg-primary/90 active:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Signing in…' : 'Sign in'}
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Signing in...
+                </div>
+              ) : (
+                'Sign In'
+              )}
             </button>
 
-            <p className="text-center text-sm text-muted">
-              Don't have an account?{' '}
-              <button type="button" onClick={() => navigate('/auth/sign-up')} className="border-none bg-transparent p-0 font-semibold text-primary cursor-pointer">
-                Create one
+            <div className="mt-4">
+              <span className="text-sm font-medium text-text">
+                Not registered yet?
+              </span>
+              <button
+                type="button"
+                onClick={() => navigate('/auth/sign-up')}
+                className="ml-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                disabled={isLoading}
+              >
+                Create an account
               </button>
-            </p>
-
-            <p className="text-center text-sm text-muted">
-              <button type="button" onClick={async () => {
-                if (!email.trim()) {
-                  setErrors({ email: 'Enter your email first to reset your password.' });
-                  return;
-                }
-                try {
-                  const res = await AuthService.forgotPassword(email.trim());
-                  setErrors({ general: '' });
-                  alert(res.message);
-                } catch {
-                  setErrors({ general: 'Could not send reset email. Check your email address.' });
-                }
-              }} className="border-none bg-transparent p-0 font-semibold text-primary cursor-pointer">
-                Forgot password?
-              </button>
-            </p>
+            </div>
           </form>
         </div>
       </section>
