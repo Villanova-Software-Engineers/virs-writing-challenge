@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Loader2, Clock } from "lucide-react";
+import { Loader2, Clock, FileDown } from "lucide-react";
 import AdminSection from "./AdminSection";
 import { useAdminUsers, useAdminSessions, useSemesters } from "../../hooks/useApi";
+import { exportSessionsToPDF, exportSessionsToExcel } from "../../utils/exportUtils";
 
 function TimeLogPanel() {
   const { data: usersData, isLoading: usersLoading } = useAdminUsers();
@@ -65,12 +66,46 @@ function TimeLogPanel() {
 
   const aggregatedData = Object.values(userAggregates);
 
+  const handleExportPDF = () => {
+    const selectedUserName = users.find(u => u.id === parseInt(selectedUserId))?.first_name + ' ' + users.find(u => u.id === parseInt(selectedUserId))?.last_name;
+    const selectedSemesterName = semesters.find(s => s.id === parseInt(selectedSemesterId))?.name;
+    const dataToExport = selectedUserId ? sessions : aggregatedData;
+    exportSessionsToPDF(dataToExport, !selectedUserId, selectedUserName, selectedSemesterName, totalSeconds);
+  };
+
+  const handleExportExcel = () => {
+    const selectedUserName = users.find(u => u.id === parseInt(selectedUserId))?.first_name + ' ' + users.find(u => u.id === parseInt(selectedUserId))?.last_name;
+    const selectedSemesterName = semesters.find(s => s.id === parseInt(selectedSemesterId))?.name;
+    const dataToExport = selectedUserId ? sessions : aggregatedData;
+    exportSessionsToExcel(dataToExport, !selectedUserId, selectedUserName, selectedSemesterName, totalSeconds);
+  };
+
   return (
     <AdminSection
       title="Writing Sessions"
       description="View all writing sessions across all users and semesters."
     >
       <div className="flex flex-col gap-4">
+        {/* Export Buttons */}
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={handleExportPDF}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-semibold"
+            disabled={sessions.length === 0}
+          >
+            <FileDown size={16} />
+            Export PDF
+          </button>
+          <button
+            onClick={handleExportExcel}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold"
+            disabled={sessions.length === 0}
+          >
+            <FileDown size={16} />
+            Export Excel
+          </button>
+        </div>
+
         {/* Filters and Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>

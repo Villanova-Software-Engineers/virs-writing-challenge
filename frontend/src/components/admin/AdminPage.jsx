@@ -23,7 +23,7 @@ function AdminPage() {
   return (
     <div className="flex h-screen overflow-hidden">
       <AdminNav activeId={activeSection} onSelect={setActiveSection} />
-      <main className="flex-1 overflow-y-auto bg-slate-50 p-8">
+      <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 p-8">
         <div className="flex flex-col gap-8">
           {activeContent}
         </div>
