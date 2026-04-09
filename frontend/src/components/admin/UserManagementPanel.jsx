@@ -70,7 +70,7 @@ function UserManagementPanel() {
     >
       <div className="flex flex-col gap-5">
         {/* Stats */}
-        <div className="bg-slate-50 rounded-lg p-4">
+        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
           <div className="text-xs font-semibold text-muted uppercase">Total Users</div>
           <div className="text-2xl font-bold text-text mt-1">{usersData?.total || 0}</div>
         </div>
@@ -78,7 +78,7 @@ function UserManagementPanel() {
         {/* User Table */}
         <div className="overflow-hidden rounded-xl border border-accent/30">
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-100 text-muted">
+            <thead className="bg-slate-100 dark:bg-slate-700 text-muted">
               <tr>
                 <th className="px-4 py-3 text-left font-semibold">Name</th>
                 <th className="px-4 py-3 text-left font-semibold">Email</th>
@@ -86,7 +86,7 @@ function UserManagementPanel() {
                 <th className="px-4 py-3 text-right font-semibold">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-accent/20 bg-white">
+            <tbody className="divide-y divide-accent/20 bg-white dark:bg-slate-800">
               {users.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-4 py-8 text-center text-muted">
@@ -97,7 +97,7 @@ function UserManagementPanel() {
                 users.map((user) => (
                   editingUser?.id === user.id ? (
                     // Edit mode row
-                    <tr key={user.id} className="bg-blue-50">
+                    <tr key={user.id} className="bg-blue-50 dark:bg-blue-900/20">
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <input
@@ -136,7 +136,7 @@ function UserManagementPanel() {
                           </button>
                           <button
                             onClick={handleCancelEdit}
-                            className="px-3 py-1.5 rounded-lg border border-accent/40 text-xs font-semibold text-text hover:bg-slate-50"
+                            className="px-3 py-1.5 rounded-lg border border-accent/40 text-xs font-semibold text-text hover:bg-slate-50 dark:hover:bg-slate-700"
                           >
                             Cancel
                           </button>
@@ -145,7 +145,7 @@ function UserManagementPanel() {
                     </tr>
                   ) : (
                     // Normal view row
-                    <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                       <td className="px-4 py-3 font-medium text-text">
                         {user.first_name} {user.last_name}
                       </td>
@@ -155,14 +155,14 @@ function UserManagementPanel() {
                         <div className="flex flex-wrap gap-2 justify-end">
                           <button
                             onClick={() => handleEdit(user)}
-                            className="px-3 py-1.5 rounded-lg border border-accent/40 text-xs font-semibold text-text hover:bg-slate-50 flex items-center gap-1.5"
+                            className="px-3 py-1.5 rounded-lg border border-accent/40 text-xs font-semibold text-text hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-1.5"
                           >
                             <Pencil size={14} />
                             Edit
                           </button>
                           <button
                             onClick={() => handleDelete(user)}
-                            className="px-3 py-1.5 rounded-lg border border-red-300 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-1.5"
+                            className="px-3 py-1.5 rounded-lg border border-red-300 dark:border-red-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-1.5"
                           >
                             <Trash2 size={14} />
                             Delete

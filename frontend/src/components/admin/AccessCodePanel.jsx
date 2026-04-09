@@ -124,7 +124,7 @@ function AccessCodePanel() {
       }
     >
       {showCreateForm && (
-        <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-accent/40">
+        <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-accent/40">
           <h3 className="text-sm font-semibold text-text mb-3">Create New Semester</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -165,7 +165,7 @@ function AccessCodePanel() {
               {createSemesterMutation.isPending ? "Creating..." : "Create Semester"}
             </button>
             <button
-              className="px-4 py-2 rounded-lg border border-accent/40 text-sm font-semibold text-text hover:bg-slate-50"
+              className="px-4 py-2 rounded-lg border border-accent/40 text-sm font-semibold text-text hover:bg-slate-50 dark:hover:bg-slate-700"
               onClick={() => setShowCreateForm(false)}
             >
               Cancel
@@ -177,7 +177,7 @@ function AccessCodePanel() {
       {activeSemester ? (
         isEditing ? (
           // Edit Mode
-          <div className="grid grid-cols-1 gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="grid grid-cols-1 gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <div>
               <label className="text-xs font-semibold text-muted uppercase">Semester Name</label>
               <input
@@ -209,7 +209,7 @@ function AccessCodePanel() {
                 {updateSemesterMutation.isPending ? "Saving..." : "Save Changes"}
               </button>
               <button
-                className="px-4 py-2 rounded-lg border border-accent/40 text-sm font-semibold text-text hover:bg-slate-50"
+                className="px-4 py-2 rounded-lg border border-accent/40 text-sm font-semibold text-text hover:bg-slate-50 dark:hover:bg-slate-700"
                 onClick={handleCancelEdit}
               >
                 Cancel
@@ -229,7 +229,7 @@ function AccessCodePanel() {
                   </div>
                 </div>
                 <button
-                  className="px-3 py-2 rounded-lg border border-accent/40 bg-white text-sm font-semibold text-text hover:bg-slate-50 flex items-center gap-2"
+                  className="px-3 py-2 rounded-lg border border-accent/40 bg-white dark:bg-slate-700 text-sm font-semibold text-text hover:bg-slate-50 dark:hover:bg-slate-600 flex items-center gap-2"
                   onClick={handleStartEdit}
                 >
                   <Pencil size={14} />
@@ -240,21 +240,21 @@ function AccessCodePanel() {
 
             <div>
               <label className="text-xs font-semibold text-muted uppercase">Access Code</label>
-              <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+              <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 px-4 py-3">
                 <div>
                   <div className="text-lg font-mono text-text font-bold">{activeSemester.access_code}</div>
-                  <div className="text-xs text-green-700 mt-1">Active - Users can join with this code</div>
+                  <div className="text-xs text-green-700 dark:text-green-400 mt-1">Active - Users can join with this code</div>
                 </div>
                 <div className="flex gap-2">
                   <button
-                    className="px-3 py-2 rounded-lg border border-accent/40 bg-white text-sm font-semibold text-text hover:bg-slate-50 flex items-center gap-2"
+                    className="px-3 py-2 rounded-lg border border-accent/40 bg-white dark:bg-slate-700 text-sm font-semibold text-text hover:bg-slate-50 dark:hover:bg-slate-600 flex items-center gap-2"
                     onClick={handleCopyCode}
                   >
                     {copied ? <Check size={16} /> : <Copy size={16} />}
                     {copied ? "Copied!" : "Copy"}
                   </button>
                   <button
-                    className="px-3 py-2 rounded-lg border border-red-300 bg-white text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                    className="px-3 py-2 rounded-lg border border-red-300 dark:border-red-800 bg-white dark:bg-slate-700 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
                     onClick={handleEndSemester}
                     disabled={endSemesterMutation.isPending}
                   >

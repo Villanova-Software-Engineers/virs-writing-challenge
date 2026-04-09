@@ -51,7 +51,7 @@ function AdminManagementPanel() {
     >
       <div className="flex flex-col gap-6">
         {/* Admin Count Stats */}
-        <div className="bg-slate-50 rounded-lg p-4">
+        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
           <div className="text-xs font-semibold text-muted uppercase">Total Admins</div>
           <div className="text-2xl font-bold text-text mt-1">{adminUsers.length}</div>
         </div>
@@ -66,7 +66,7 @@ function AdminManagementPanel() {
           ) : (
             <div className="overflow-hidden rounded-xl border border-accent/30">
               <table className="min-w-full text-sm">
-                <thead className="bg-slate-100 text-muted">
+                <thead className="bg-slate-100 dark:bg-slate-700 text-muted">
                   <tr>
                     <th className="px-4 py-3 text-left font-semibold">Name</th>
                     <th className="px-4 py-3 text-left font-semibold">Email</th>
@@ -74,9 +74,9 @@ function AdminManagementPanel() {
                     <th className="px-4 py-3 text-right font-semibold">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-accent/20 bg-white">
+                <tbody className="divide-y divide-accent/20 bg-white dark:bg-slate-800">
                   {adminUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                       <td className="px-4 py-3 font-medium text-text">
                         {user.first_name} {user.last_name}
                       </td>
@@ -87,7 +87,7 @@ function AdminManagementPanel() {
                           <button
                             onClick={() => handleToggleAdmin(user)}
                             disabled={processingUserId === user.id}
-                            className="px-3 py-1.5 rounded-lg border border-red-300 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50 flex items-center gap-1.5"
+                            className="px-3 py-1.5 rounded-lg border border-red-300 dark:border-red-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 flex items-center gap-1.5"
                           >
                             <ShieldOff size={14} />
                             {processingUserId === user.id ? "Removing..." : "Remove Admin"}
@@ -112,7 +112,7 @@ function AdminManagementPanel() {
           ) : (
             <div className="overflow-hidden rounded-xl border border-accent/30">
               <table className="min-w-full text-sm">
-                <thead className="bg-slate-100 text-muted">
+                <thead className="bg-slate-100 dark:bg-slate-700 text-muted">
                   <tr>
                     <th className="px-4 py-3 text-left font-semibold">Name</th>
                     <th className="px-4 py-3 text-left font-semibold">Email</th>
@@ -120,9 +120,9 @@ function AdminManagementPanel() {
                     <th className="px-4 py-3 text-right font-semibold">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-accent/20 bg-white">
+                <tbody className="divide-y divide-accent/20 bg-white dark:bg-slate-800">
                   {nonAdminUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                       <td className="px-4 py-3 font-medium text-text">
                         {user.first_name} {user.last_name}
                       </td>
@@ -133,7 +133,7 @@ function AdminManagementPanel() {
                           <button
                             onClick={() => handleToggleAdmin(user)}
                             disabled={processingUserId === user.id}
-                            className="px-3 py-1.5 rounded-lg border border-green-300 text-xs font-semibold text-green-600 hover:bg-green-50 disabled:opacity-50 flex items-center gap-1.5"
+                            className="px-3 py-1.5 rounded-lg border border-green-300 dark:border-green-800 text-xs font-semibold text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50 flex items-center gap-1.5"
                           >
                             <Shield size={14} />
                             {processingUserId === user.id ? "Granting..." : "Make Admin"}

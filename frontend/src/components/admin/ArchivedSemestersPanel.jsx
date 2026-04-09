@@ -49,7 +49,7 @@ function ArchivedSemestersPanel() {
               {activeSemesters.map((semester) => (
                 <div
                   key={semester.id}
-                  className="rounded-xl border border-green-200 bg-green-50 p-4"
+                  className="rounded-xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-4"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -57,7 +57,7 @@ function ArchivedSemestersPanel() {
                       <div className="text-xs text-muted mt-1">
                         {new Date(semester.start_date).toLocaleDateString()} - {new Date(semester.end_date).toLocaleDateString()}
                       </div>
-                      <div className="text-xs text-green-700 mt-1">
+                      <div className="text-xs text-green-700 dark:text-green-400 mt-1">
                         Access Code: <span className="font-mono font-semibold">{semester.access_code}</span>
                       </div>
                     </div>
@@ -78,7 +78,7 @@ function ArchivedSemestersPanel() {
             Archived Semesters ({archivedSemesters.length})
           </h3>
           {archivedSemesters.length === 0 ? (
-            <div className="text-center py-8 text-muted bg-slate-50 rounded-lg">
+            <div className="text-center py-8 text-muted bg-slate-50 dark:bg-slate-800 rounded-lg">
               No archived semesters
             </div>
           ) : (
@@ -86,7 +86,7 @@ function ArchivedSemestersPanel() {
               {archivedSemesters.map((semester) => (
                 <div
                   key={semester.id}
-                  className="rounded-xl border border-slate-200 bg-white p-4"
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex-1">
@@ -106,7 +106,7 @@ function ArchivedSemestersPanel() {
                     <button
                       onClick={() => handleDelete(semester)}
                       disabled={deleteSemesterMutation.isPending}
-                      className="px-3 py-1.5 rounded-lg border border-red-300 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                      className="px-3 py-1.5 rounded-lg border border-red-300 dark:border-red-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
                     >
                       {deleteSemesterMutation.isPending ? "Deleting..." : "Delete Permanently"}
                     </button>

@@ -154,14 +154,14 @@ function TimeLogPanel() {
           /* Aggregated View - Show total time per user */
           <div className="overflow-hidden rounded-xl border border-accent/30">
             <table className="min-w-full text-sm">
-              <thead className="bg-slate-100 text-muted">
+              <thead className="bg-slate-100 dark:bg-slate-700 text-muted">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold">User</th>
                   <th className="px-4 py-3 text-left font-semibold">Total Sessions</th>
                   <th className="px-4 py-3 text-left font-semibold">Total Time Logged</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-accent/20 bg-white">
+              <tbody className="divide-y divide-accent/20 bg-white dark:bg-slate-800">
                 {aggregatedData.length === 0 ? (
                   <tr>
                     <td colSpan={3} className="px-4 py-8 text-center text-muted">
@@ -170,7 +170,7 @@ function TimeLogPanel() {
                   </tr>
                 ) : (
                   aggregatedData.map((userStat) => (
-                    <tr key={userStat.user_uid} className="hover:bg-slate-50 transition-colors">
+                    <tr key={userStat.user_uid} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                       <td className="px-4 py-3 font-medium text-text">
                         {userStat.user_name}
                       </td>
@@ -186,7 +186,7 @@ function TimeLogPanel() {
           /* Detailed View - Show individual sessions */
           <div className="overflow-hidden rounded-xl border border-accent/30">
             <table className="min-w-full text-sm">
-              <thead className="bg-slate-100 text-muted">
+              <thead className="bg-slate-100 dark:bg-slate-700 text-muted">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold">Date</th>
                   <th className="px-4 py-3 text-left font-semibold">Start</th>
@@ -195,7 +195,7 @@ function TimeLogPanel() {
                   <th className="px-4 py-3 text-left font-semibold">Description</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-accent/20 bg-white">
+              <tbody className="divide-y divide-accent/20 bg-white dark:bg-slate-800">
                 {sessions.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-muted">
@@ -204,7 +204,7 @@ function TimeLogPanel() {
                   </tr>
                 ) : (
                   sessions.map((session) => (
-                    <tr key={session.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={session.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                       <td className="px-4 py-3 text-muted">{formatDate(session.started_at)}</td>
                       <td className="px-4 py-3 text-muted">{formatTime(session.started_at)}</td>
                       <td className="px-4 py-3 text-muted">{formatTime(session.ended_at)}</td>
