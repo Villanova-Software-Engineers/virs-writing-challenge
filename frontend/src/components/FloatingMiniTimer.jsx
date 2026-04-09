@@ -60,12 +60,6 @@ export default function FloatingMiniTimer() {
               className="transition-[stroke-dashoffset] duration-700 ease-out"
             />
           </svg>
-          {/* Pulse dot while running */}
-          {isRunning && (
-            <span className="absolute top-0.5 right-0.5 h-2.5 w-2.5 rounded-full bg-blue-500">
-              <span className="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-75" />
-            </span>
-          )}
         </div>
 
         {/* Time + status label */}

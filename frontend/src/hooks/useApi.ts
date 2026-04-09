@@ -340,7 +340,7 @@ export function useTodaySessions(
   return useQuery({
     queryKey: [...queryKeys.sessions, "today"],
     queryFn: () => api.get<WritingSessionsListResponse>("/api/sessions/today"),
-    staleTime: 30 * 1000,
+    staleTime: 0, // Always refetch to ensure fresh data on page load
     ...options,
   });
 }

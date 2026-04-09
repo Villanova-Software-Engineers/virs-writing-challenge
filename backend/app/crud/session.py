@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from typing import List, Optional, Tuple
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from app.models import WritingSession, Semester
 from app.schemas.session import WritingSessionCreate, WritingSessionResponse
 
@@ -61,9 +62,10 @@ def get_user_sessions(
 
 
 def get_today_sessions(user_id: int, db: Session) -> Tuple[List[WritingSession], int]:
-  
-    est = timezone(timedelta(hours=-5))
-    today_start = datetime.now(est).replace(hour=0, minute=0, second=0, microsecond=0)
+    # Use America/New_York timezone to properly handle EST/EDT transitions
+    eastern = ZoneInfo("America/New_York")
+    now_eastern = datetime.now(eastern)
+    today_start = now_eastern.replace(hour=0, minute=0, second=0, microsecond=0)
 
     sessions = (
         db.query(WritingSession)

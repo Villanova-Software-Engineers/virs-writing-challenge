@@ -61,9 +61,8 @@ const SignInPage: React.FC = () => {
         <div className="absolute bottom-20 left-20 w-96 h-96 bg-cyan-300/5 dark:bg-cyan-400/5 rounded-full blur-3xl"></div>
 
         <div className="relative z-10 max-w-xl">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 dark:bg-white/10 backdrop-blur-sm px-4 py-2.5 text-[13px] font-semibold text-white shadow-lg border border-white/20 dark:border-white/10">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 dark:bg-white/10 backdrop-blur-sm px-4 py-2.5 text-[16px] font-semibold text-white shadow-lg border border-white/20 dark:border-white/10">
             <span>VIRS Writing Challenge</span>
-            <span className="opacity-90">Villanova · Spring 2026</span>
           </div>
 
           <h1 className="mt-8 text-[clamp(38px,4.5vw,52px)] leading-[1.1] font-black text-white">

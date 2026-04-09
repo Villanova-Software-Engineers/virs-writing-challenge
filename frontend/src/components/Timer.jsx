@@ -21,6 +21,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
   const [error, setError] = useState('');
 
   // Sync sessionSavedToday from the API into context
+  // Backend is the source of truth - no localStorage needed for this
   const { data: todaySessionsData } = useTodaySessions();
   useEffect(() => {
     setSessionSavedToday((todaySessionsData?.sessions?.length ?? 0) > 0);
@@ -113,7 +114,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
                 sessionSavedToday
                   ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
                   : isRunning
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500'
                   : 'bg-slate-400 dark:bg-slate-500'
               }`}
             />

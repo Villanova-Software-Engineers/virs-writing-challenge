@@ -18,28 +18,51 @@ export function TimerProvider({ children }) {
     return userId ? `${key}_${userId}` : key;
   };
 
-  // Rehydrate from localStorage on mount
+  // Track current user and reset timer when user changes
   useEffect(() => {
-    const savedStartTime = localStorage.getItem(getStorageKey("timerStartTime"));
-    const savedPausedTime = localStorage.getItem(getStorageKey("timerPausedTime"));
-    const savedIsRunning = localStorage.getItem(getStorageKey("timerIsRunning"));
-    const savedDescription = localStorage.getItem(getStorageKey("timerDescription"));
-
-    if (savedDescription) setDescriptionState(savedDescription);
-
-    if (savedStartTime) {
-      startTimeRef.current = parseInt(savedStartTime, 10);
-      pausedTimeRef.current = savedPausedTime ? parseInt(savedPausedTime, 10) : 0;
-
-      if (savedIsRunning === "true") {
-        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
-        setSeconds(elapsed);
-        setIsRunning(true);
-      } else {
-        const elapsed = Math.floor(pausedTimeRef.current / 1000);
-        setSeconds(elapsed);
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        // User logged out - reset everything
+        setSeconds(0);
+        startTimeRef.current = null;
+        pausedTimeRef.current = 0;
+        setIsRunning(false);
+        setDescriptionState("");
+        setSessionSavedToday(false);
+        return;
       }
-    }
+
+      // User logged in - load their data from localStorage
+      const savedStartTime = localStorage.getItem(getStorageKey("timerStartTime"));
+      const savedPausedTime = localStorage.getItem(getStorageKey("timerPausedTime"));
+      const savedIsRunning = localStorage.getItem(getStorageKey("timerIsRunning"));
+      const savedDescription = localStorage.getItem(getStorageKey("timerDescription"));
+
+      if (savedDescription) setDescriptionState(savedDescription);
+
+      if (savedStartTime) {
+        startTimeRef.current = parseInt(savedStartTime, 10);
+        pausedTimeRef.current = savedPausedTime ? parseInt(savedPausedTime, 10) : 0;
+
+        if (savedIsRunning === "true") {
+          const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+          setSeconds(elapsed);
+          setIsRunning(true);
+        } else {
+          const elapsed = Math.floor(pausedTimeRef.current / 1000);
+          setSeconds(elapsed);
+        }
+      } else {
+        // No saved data for this user - reset to fresh state
+        setSeconds(0);
+        startTimeRef.current = null;
+        pausedTimeRef.current = 0;
+        setIsRunning(false);
+        setDescriptionState("");
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Tick every second when running
