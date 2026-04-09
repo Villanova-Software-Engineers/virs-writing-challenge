@@ -15,7 +15,7 @@ export default function Sessions() {
   const sessionsPerPage = 10;
 
   const { data: semester } = useActiveSemester();
-  const { data: sessionsData, isLoading } = useSessions(1000); // Get all sessions
+  const { data: sessionsData, isLoading } = useSessions(1000);
 
   const formatDuration = (seconds: number): string => {
     const h = Math.floor(seconds / 3600);
@@ -27,11 +27,14 @@ export default function Sessions() {
   };
 
   const formatDurationShort = (seconds: number): string => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m`;
-  };
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0 && s > 0) return `${m}m ${s}s`;
+  if (m > 0) return `${m}m`;
+  return `${s}s`;
+};
 
   const formatDate = (isoString: string): string => {
     const date = new Date(isoString);
@@ -52,18 +55,15 @@ export default function Sessions() {
     });
   };
 
-  // Pagination logic
   const allSessions = sessionsData?.sessions ?? [];
   const totalPages = Math.ceil(allSessions.length / sessionsPerPage);
   const startIndex = (currentPage - 1) * sessionsPerPage;
   const paginatedSessions = allSessions.slice(startIndex, startIndex + sessionsPerPage);
 
-  // Stats calculations
   const totalTime = sessionsData?.total_time ?? 0;
   const totalSessions = allSessions.length;
   const avgSessionTime = totalSessions > 0 ? Math.round(totalTime / totalSessions) : 0;
 
-  // Group sessions by month for summary
   const sessionsByMonth = allSessions.reduce((acc, session) => {
     const date = new Date(session.started_at);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -75,8 +75,7 @@ export default function Sessions() {
     return acc;
   }, {} as Record<string, { count: number; duration: number }>);
 
-  // Find max duration for bar chart scaling
-  const maxMonthDuration = Math.max(...Object.values(sessionsByMonth).map(m => m.duration), 1);
+  const maxMonthDuration = totalTime || 1;
 
   return (
     <div className="p-6 lg:p-8 min-h-full bg-gray-50 dark:bg-gray-900">

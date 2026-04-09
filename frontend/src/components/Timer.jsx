@@ -1,95 +1,32 @@
-import { useState, useEffect, useRef } from 'react';
-import {
-  Play,
-  Pause,
-  RotateCcw,
-  Save,
-  CheckCircle2,
-} from 'lucide-react';
+// src/components/Timer.jsx
+import { useState, useEffect } from 'react';
+import { Play, Pause, RotateCcw, Save, CheckCircle2 } from 'lucide-react';
 import WarningPopup from './WarningPopup';
-import { auth } from '../firebase/config';
 import { useTodaySessions } from '../hooks/useApi';
+import { useTimerContext } from '../context/TimerContext';
 
 function Timer({ onSessionSave, onTimerUpdate }) {
-  const [seconds, setSeconds] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [description, setDescription] = useState('');
+  const {
+    seconds,
+    isRunning,
+    description,
+    sessionSavedToday,
+    setSessionSavedToday,
+    handleToggle,
+    handleReset,
+    handleStop,
+    setDescription,
+  } = useTimerContext();
+
   const [error, setError] = useState('');
 
-  const startTimeRef = useRef(null);
-  const pausedTimeRef = useRef(0);
-
-  // Fetch today's sessions from backend to check if session was already saved
+  // Sync sessionSavedToday from the API into context
   const { data: todaySessionsData } = useTodaySessions();
-  const sessionSavedToday = (todaySessionsData?.sessions?.length ?? 0) > 0;
-
-  // Helper functions to create user-specific localStorage keys
-  const getStorageKey = (key) => {
-    const userId = auth.currentUser?.uid;
-    return userId ? `${key}_${userId}` : key;
-  };
-
   useEffect(() => {
-    const savedStartTime = localStorage.getItem(getStorageKey('timerStartTime'));
-    const savedPausedTime = localStorage.getItem(getStorageKey('timerPausedTime'));
-    const savedIsRunning = localStorage.getItem(getStorageKey('timerIsRunning'));
-    const savedDescription = localStorage.getItem(getStorageKey('timerDescription'));
+    setSessionSavedToday((todaySessionsData?.sessions?.length ?? 0) > 0);
+  }, [todaySessionsData, setSessionSavedToday]);
 
-    if (savedDescription) {
-      setDescription(savedDescription);
-    }
-
-    if (savedStartTime) {
-      startTimeRef.current = parseInt(savedStartTime, 10);
-      pausedTimeRef.current = savedPausedTime ? parseInt(savedPausedTime, 10) : 0;
-
-      if (savedIsRunning === 'true') {
-        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
-        setSeconds(elapsed);
-        setIsRunning(true);
-      } else {
-        const elapsed = Math.floor((parseInt(savedPausedTime, 10)) / 1000);
-        setSeconds(elapsed);
-        setIsRunning(false);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const checkTimeLimits = () => {
-      const now = new Date();
-      const estTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-      const hours = estTime.getHours();
-      const minutes = estTime.getMinutes();
-
-      if (hours === 23 && minutes === 59 && isRunning) {
-        handleStop();
-        setError('Timer automatically stopped at 11:59 PM EST cutoff');
-      }
-
-      if (hours === 0 && minutes === 0) {
-        handleReset();
-        // sessionSavedToday will automatically update via API query
-      }
-    };
-
-    const interval = setInterval(checkTimeLimits, 30000);
-    return () => clearInterval(interval);
-  }, [isRunning]);
-
-  useEffect(() => {
-    let interval = null;
-    if (isRunning) {
-      interval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
-        setSeconds(elapsed);
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isRunning]);
-
+  // Keep Dashboard's todayWritingTime stat in sync
   useEffect(() => {
     if (onTimerUpdate) onTimerUpdate(seconds);
   }, [seconds, onTimerUpdate]);
@@ -101,59 +38,16 @@ function Timer({ onSessionSave, onTimerUpdate }) {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const countWords = (text) => {
-    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
-  };
+  const countWords = (text) =>
+    text.trim().split(/\s+/).filter((w) => w.length > 0).length;
 
   const handleDescriptionChange = (e) => {
     const newText = e.target.value;
-    const wc = countWords(newText);
-    if (wc <= 10) {
-      setDescription(newText);
-      localStorage.setItem(getStorageKey('timerDescription'), newText);
+    if (countWords(newText) <= 10) {
+      setDescription(newText); // context setter — also persists to localStorage
       setError('');
     } else {
       setError('Description must be 10 words or less');
-    }
-  };
-
-  const handleReset = () => {
-    setSeconds(0);
-    startTimeRef.current = null;
-    pausedTimeRef.current = 0;
-    setIsRunning(false);
-    setDescription('');
-    setError('');
-    localStorage.removeItem(getStorageKey('timerStartTime'));
-    localStorage.removeItem(getStorageKey('timerPausedTime'));
-    localStorage.removeItem(getStorageKey('timerIsRunning'));
-    localStorage.removeItem(getStorageKey('timerDescription'));
-  };
-
-  const handleStop = () => {
-    if (!isRunning) return;
-    const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
-    setSeconds(elapsed);
-    pausedTimeRef.current = elapsed * 1000;
-    localStorage.setItem(getStorageKey('timerPausedTime'), pausedTimeRef.current.toString());
-    localStorage.setItem(getStorageKey('timerIsRunning'), 'false');
-    setIsRunning(false);
-  };
-
-  const handleToggle = () => {
-    if (isRunning) {
-      handleStop();
-    } else {
-      if (startTimeRef.current === null) {
-        startTimeRef.current = Date.now();
-        pausedTimeRef.current = 0;
-      } else {
-        startTimeRef.current = Date.now() - pausedTimeRef.current;
-      }
-      localStorage.setItem(getStorageKey('timerStartTime'), startTimeRef.current.toString());
-      localStorage.setItem(getStorageKey('timerIsRunning'), 'true');
-      setIsRunning(true);
-      setError('');
     }
   };
 
@@ -186,8 +80,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
       description: description.trim(),
     };
 
-    // Pass session to parent component which will save to backend
-    handleReset();
+    handleReset(); // clears context state + localStorage
     setError('');
 
     if (onSessionSave) onSessionSave(session);
@@ -206,30 +99,30 @@ function Timer({ onSessionSave, onTimerUpdate }) {
         {/* Left Side - Timer Display */}
         <div className="flex flex-col items-center flex-1">
           {/* Status Badge */}
-          <span className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider mb-8 backdrop-blur-sm transition-all duration-300 ${
-            sessionSavedToday
-              ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-400/50'
-              : isRunning
+          <span
+            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider mb-8 backdrop-blur-sm transition-all duration-300 ${
+              sessionSavedToday
+                ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-400/50'
+                : isRunning
                 ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-600 dark:text-blue-400 border border-blue-400/50 animate-pulse'
                 : 'bg-gradient-to-r from-slate-100/80 to-slate-200/80 dark:from-slate-700/50 dark:to-slate-600/50 text-slate-700 dark:text-slate-300 border border-slate-300/50 dark:border-slate-500/50'
-          }`}>
-            <span className={`h-2.5 w-2.5 rounded-full ${
-              sessionSavedToday
-                ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
-                : isRunning
+            }`}
+          >
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                sessionSavedToday
+                  ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
+                  : isRunning
                   ? 'bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse'
                   : 'bg-slate-400 dark:bg-slate-500'
-            }`} />
+              }`}
+            />
             {sessionSavedToday ? 'Session Saved' : isRunning ? 'Writing...' : 'Ready'}
           </span>
 
           {/* Circular Timer */}
           <div className="relative flex h-[280px] w-[280px] items-center justify-center sm:h-[320px] sm:w-[320px] mb-8">
-            <svg
-              className="absolute inset-0 h-full w-full -rotate-90"
-              viewBox="0 0 280 280"
-              aria-hidden="true"
-            >
+            <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 280 280" aria-hidden="true">
               <defs>
                 <linearGradient id="timer-progress-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#10b981" />
@@ -237,16 +130,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
                   <stop offset="100%" stopColor="#06b6d4" />
                 </linearGradient>
               </defs>
-              {/* Background track circle */}
-              <circle
-                cx="140"
-                cy="140"
-                r="116"
-                fill="none"
-                stroke="rgba(148,163,184,0.2)"
-                strokeWidth="12"
-              />
-              {/* Animated progress circle */}
+              <circle cx="140" cy="140" r="116" fill="none" stroke="rgba(148,163,184,0.2)" strokeWidth="12" />
               <circle
                 cx="140"
                 cy="140"
@@ -275,8 +159,8 @@ function Timer({ onSessionSave, onTimerUpdate }) {
                 sessionSavedToday
                   ? 'bg-slate-300 dark:bg-slate-600 cursor-not-allowed opacity-50'
                   : isRunning
-                    ? 'bg-pink-500 hover:bg-pink-600 hover:scale-110'
-                    : 'bg-blue-600 dark:bg-blue-400 hover:opacity-90 hover:scale-110'
+                  ? 'bg-pink-500 hover:bg-pink-600 hover:scale-110'
+                  : 'bg-primary hover:opacity-90 hover:scale-110'
               }`}
             >
               {isRunning ? <Pause className="h-7 w-7" /> : <Play className="ml-0.5 h-7 w-7" />}
@@ -317,14 +201,16 @@ function Timer({ onSessionSave, onTimerUpdate }) {
               <label className="block text-base font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-blue-400 dark:to-blue-400 bg-clip-text text-transparent">
                 Session Description
               </label>
-              <span className={`rounded-full px-3.5 py-1.5 text-sm font-black tabular-nums backdrop-blur-sm transition-all duration-300 ${
-                wordCount > 10
-                  ? 'bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-950/50 dark:to-pink-950/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-800'
-                  : wordCount > 8
+              <span
+                className={`rounded-full px-3.5 py-1.5 text-xs font-black tabular-nums backdrop-blur-sm transition-all duration-300 ${
+                  wordCount > 10
+                    ? 'bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-950/50 dark:to-pink-950/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-800'
+                    : wordCount > 8
                     ? 'bg-gradient-to-r from-yellow-100 to-yellow-100 dark:from-yellow-950/50 dark:to-yellow-950/50 text-yellow-700 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-800'
                     : 'bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800/50 dark:to-slate-700/50 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600'
-              }`}>
-                {wordCount}/10 words
+                }`}
+              >
+                {wordCount}/10
               </span>
             </div>
             <div className="relative">
@@ -337,6 +223,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
                 className="w-full px-5 py-4 text-base border-2 border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl text-gray-900 dark:text-blue-400 placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 dark:focus:ring-blue-500 dark:focus:border-blue-400 outline-none disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-all duration-300 resize-none"
               />
             </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Maximum 10 words</p>
           </div>
 
           {/* Save Button */}
