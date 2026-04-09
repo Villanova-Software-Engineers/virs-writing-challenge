@@ -289,8 +289,8 @@ function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
               disabled={likeMutation.isPending}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 hasLiked
-                  ? "bg-[#003366] dark:bg-primary text-white shadow-sm"
-                  : "text-muted hover:bg-background hover:shadow-sm"
+                  ? "bg-slate-900 dark:bg-slate-700 text-white shadow-sm"
+                  : "text-slate-700 dark:text-slate-300 hover:bg-background hover:shadow-sm"
               }`}
             >
               <ThumbsUp size={14} />
@@ -300,7 +300,7 @@ function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
             {/* Comments toggle */}
             <button
               onClick={() => setShowComments((v) => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-muted hover:bg-background hover:shadow-sm transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-background hover:shadow-sm transition-all"
             >
               <MessageSquare size={14} />
               {msg.comments.length > 0 && <span>{msg.comments.length}</span>}
@@ -381,8 +381,14 @@ export default function MessageBoard() {
 
   const currentUserId = auth.currentUser?.uid || "";
 
-  // Flatten all pages into a single array of messages
-  const messages = data?.pages.flatMap((page) => page.messages) ?? [];
+  // Flatten all pages into a single array of messages and sort: pinned first, then by date
+  const messages = (data?.pages.flatMap((page) => page.messages) ?? []).sort((a, b) => {
+    // Pinned messages always come first
+    if (a.is_pinned && !b.is_pinned) return -1;
+    if (!a.is_pinned && b.is_pinned) return 1;
+    // Within same pin status, sort by creation date (newest first)
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
   const handlePost = () => {
     if (!content.trim()) return;
@@ -403,10 +409,10 @@ export default function MessageBoard() {
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-1">
-            <MessageSquare className="text-primary" size={28} strokeWidth={2.5} />
-            <h1 className="text-3xl font-bold text-text">Community Board</h1>
+            <MessageSquare className="text-slate-900 dark:text-white" size={28} strokeWidth={2.5} />
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Community Board</h1>
           </div>
-          <p className="text-muted text-sm ml-11">
+          <p className="text-slate-700 dark:text-slate-300 text-sm ml-11">
             Share updates, progress, and connect with the community.
           </p>
         </div>
@@ -419,15 +425,15 @@ export default function MessageBoard() {
             onKeyDown={(e) => e.key === "Enter" && (e.metaKey || e.ctrlKey) && handlePost()}
             placeholder="Share your thoughts, progress, or questions with the community..."
             rows={2}
-            className="w-full resize-none rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm text-text placeholder-muted focus:outline-none focus:ring-2 focus:ring-[#003366] dark:focus:ring-primary focus:border-transparent transition shadow-sm"
+            className="w-full resize-none rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#003366] dark:focus:ring-primary focus:border-transparent transition shadow-sm"
           />
 
           <div className="flex items-center justify-between mt-3">
-            <span className="text-xs text-muted">Ctrl/Cmd + Enter to post</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400">Ctrl/Cmd + Enter to post</span>
             <button
               onClick={handlePost}
               disabled={!content.trim() || createMutation.isPending}
-              className="flex items-center gap-2 bg-[#003366] dark:bg-primary hover:bg-[#002244] dark:hover:bg-primary/80 disabled:bg-slate-300 dark:disabled:bg-slate-600 text-white text-sm font-bold px-5 py-2 rounded-lg transition-all duration-150 shadow-md hover:shadow-lg disabled:shadow-sm"
+              className="flex items-center gap-2 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 disabled:bg-slate-300 dark:disabled:bg-slate-600 text-white text-sm font-bold px-5 py-2 rounded-lg transition-all duration-150 shadow-md hover:shadow-lg disabled:shadow-sm"
             >
               {createMutation.isPending ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
               Post

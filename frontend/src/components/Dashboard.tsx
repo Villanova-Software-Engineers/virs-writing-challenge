@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Flame,
   Loader2,
@@ -43,7 +44,7 @@ function MiniMessageCard({ msg }: { msg: MessageResponse }) {
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-800 rounded-xl p-4 border-l-4 border-primary shadow-sm hover:shadow-md hover:scale-[1.01] transition-all duration-200 group">
-      <a href="/messages" className="block">
+      <Link to="/messages" className="block">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -75,7 +76,7 @@ function MiniMessageCard({ msg }: { msg: MessageResponse }) {
             )}
           </div>
         </div>
-      </a>
+      </Link>
       <div className="flex items-center gap-4 mt-3 pt-3 border-t border-blue-200/50 dark:border-slate-600">
         <button
           onClick={(e) => {
@@ -90,10 +91,14 @@ function MiniMessageCard({ msg }: { msg: MessageResponse }) {
           <ThumbsUp size={14} className={hasLiked ? "fill-current" : ""} />
           {msg.likes.length > 0 && msg.likes.length}
         </button>
-        <span className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400">
+        <Link
+          to="/messages"
+          className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-primary transition-colors cursor-pointer"
+          onClick={(e) => e.stopPropagation()}
+        >
           <MessageSquare size={14} />
           {msg.comments.length > 0 && msg.comments.length}
-        </span>
+        </Link>
       </div>
     </div>
   );
@@ -113,12 +118,12 @@ function RecentMessagesPanel() {
           <MessageSquare size={20} className="text-primary" />
           <h3 className="font-semibold text-text text-lg">Recent Messages</h3>
         </div>
-        <a
-          href="/messages"
+        <Link
+          to="/messages"
           className="flex items-center gap-1 text-sm text-primary font-medium hover:underline"
         >
           View all <ChevronRight size={16} />
-        </a>
+        </Link>
       </div>
 
       {isLoading ? (
@@ -136,12 +141,12 @@ function RecentMessagesPanel() {
           <MessageSquare className="mx-auto mb-3" size={40} />
           <p className="text-base font-medium">No messages yet</p>
           <p className="text-sm mt-1">Be the first to share something!</p>
-          <a
-            href="/messages"
+          <Link
+            to="/messages"
             className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
           >
             Go to Messages
-          </a>
+          </Link>
         </div>
       )}
     </div>
@@ -207,12 +212,12 @@ function RecentSessionsDropdown() {
         <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-slate-200 z-50 overflow-hidden">
           <div className="p-3 border-b border-slate-100 flex items-center justify-between">
             <span className="font-semibold text-sm text-slate-800">Recent Sessions</span>
-            <a
-              href="/sessions"
+            <Link
+              to="/sessions"
               className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
             >
               View all <ChevronRight size={12} />
-            </a>
+            </Link>
           </div>
 
           {isLoading ? (

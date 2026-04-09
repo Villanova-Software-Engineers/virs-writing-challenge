@@ -44,7 +44,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
       pausedTimeRef.current = savedPausedTime ? parseInt(savedPausedTime, 10) : 0;
 
       if (savedIsRunning === 'true') {
-        const elapsed = Math.floor((Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000);
+        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
         setSeconds(elapsed);
         setIsRunning(true);
       } else {
@@ -260,7 +260,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
                 className="transition-[stroke-dashoffset] duration-700 ease-out"
               />
             </svg>
-            <div className="relative text-4xl font-black tabular-nums leading-none tracking-tight bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 dark:from-white dark:via-slate-100 dark:to-slate-200 bg-clip-text text-transparent sm:text-5xl px-20">
+            <div className="relative text-4xl font-black tabular-nums leading-none tracking-tight bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 dark:from-blue-400 dark:via-blue-400 dark:to-blue-400 bg-clip-text text-transparent sm:text-5xl px-20">
               {formatTime(seconds)}
             </div>
           </div>
@@ -276,7 +276,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
                   ? 'bg-slate-300 dark:bg-slate-600 cursor-not-allowed opacity-50'
                   : isRunning
                     ? 'bg-pink-500 hover:bg-pink-600 hover:scale-110'
-                    : 'bg-primary hover:opacity-90 hover:scale-110'
+                    : 'bg-blue-600 dark:bg-blue-400 hover:opacity-90 hover:scale-110'
               }`}
             >
               {isRunning ? <Pause className="h-7 w-7" /> : <Play className="ml-0.5 h-7 w-7" />}
@@ -314,17 +314,17 @@ function Timer({ onSessionSave, onTimerUpdate }) {
           {/* Description */}
           <div className="space-y-3">
             <div className="flex items-baseline justify-between">
-              <label className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+              <label className="block text-base font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-blue-400 dark:to-blue-400 bg-clip-text text-transparent">
                 Session Description
               </label>
-              <span className={`rounded-full px-3.5 py-1.5 text-xs font-black tabular-nums backdrop-blur-sm transition-all duration-300 ${
+              <span className={`rounded-full px-3.5 py-1.5 text-sm font-black tabular-nums backdrop-blur-sm transition-all duration-300 ${
                 wordCount > 10
                   ? 'bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-950/50 dark:to-pink-950/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-800'
                   : wordCount > 8
                     ? 'bg-gradient-to-r from-yellow-100 to-yellow-100 dark:from-yellow-950/50 dark:to-yellow-950/50 text-yellow-700 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-800'
                     : 'bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800/50 dark:to-slate-700/50 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600'
               }`}>
-                {wordCount}/10
+                {wordCount}/10 words
               </span>
             </div>
             <div className="relative">
@@ -334,12 +334,9 @@ function Timer({ onSessionSave, onTimerUpdate }) {
                 placeholder="What did you write about today?"
                 disabled={sessionSavedToday}
                 rows="5"
-                className="w-full px-5 py-4 text-sm border-2 border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 dark:focus:ring-purple-500 dark:focus:border-purple-400 outline-none disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-all duration-300 resize-none"
+                className="w-full px-5 py-4 text-base border-2 border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl text-gray-900 dark:text-blue-400 placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 dark:focus:ring-blue-500 dark:focus:border-blue-400 outline-none disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-all duration-300 resize-none"
               />
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              Maximum 10 words
-            </p>
           </div>
 
           {/* Save Button */}
@@ -350,7 +347,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
               className={`inline-flex items-center justify-center gap-2.5 px-10 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 ${
                 sessionSavedToday
                   ? 'bg-emerald-600 text-white cursor-not-allowed'
-                  : 'bg-primary hover:opacity-90 text-white hover:scale-105'
+                  : 'bg-blue-600 dark:bg-blue-400 hover:opacity-90 text-white hover:scale-105'
               }`}
             >
               {sessionSavedToday ? <CheckCircle2 className="h-5 w-5" /> : <Save className="h-5 w-5" />}
@@ -359,9 +356,9 @@ function Timer({ onSessionSave, onTimerUpdate }) {
           </div>
 
           {/* Info */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-purple-950/30 border border-blue-300 dark:border-blue-800 rounded-xl p-4 backdrop-blur-sm">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-indigo-500/5 to-purple-500/5" />
-            <p className="relative text-xs text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
+          <div className="relative overflow-hidden bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 dark:from-blue-400/10 dark:via-blue-400/15 dark:to-blue-400/10 border border-blue-300 dark:border-blue-400/50 rounded-xl p-4 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-blue-500/10 to-blue-500/5 dark:from-blue-400/5 dark:via-blue-400/10 dark:to-blue-400/5" />
+            <p className="relative text-xs text-blue-700 dark:text-blue-400 leading-relaxed font-medium">
               <span className="font-bold">Daily Limit:</span> You can only save one writing session per day. Track all your writing time before saving.
             </p>
           </div>

@@ -30,7 +30,7 @@ select {
  
 :root {
   --background: #ffffff;
-  --primary: #4f46e5;
+  --primary: #60a5fa;
   --secondary: #6366f1;
   --accent: #818cf8;
   --text: #0f172a;
@@ -39,7 +39,7 @@ select {
 
 .dark {
   --background: #0f172a;
-  --primary: #818cf8;
+  --primary: #60a5fa;
   --secondary: #6366f1;
   --accent: #a5b4fc;
   --text: #f8fafc;
