@@ -304,11 +304,11 @@ export default function Sessions() {
                         <div className="relative">
                           <div className="h-8 bg-slate-100 dark:bg-slate-700/30 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-600/30">
                             <div
-                              className="h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 dark:from-emerald-400/90 dark:via-teal-400/90 dark:to-cyan-400/90 rounded-lg transition-all duration-500"
+                              className="h-full bg-gradient-to-r from-blue-400 via-sky-400 to-cyan-400 dark:from-blue-400/90 dark:via-sky-400/90 dark:to-cyan-400/90 rounded-lg transition-all duration-500"
                               style={{ width: `${barWidth}%` }}
                             />
                           </div>
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 font-bold text-sm text-emerald-700 dark:text-emerald-200 font-mono">
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 font-bold text-sm text-blue-700 dark:text-blue-200 font-mono">
                             {formatDurationShort(data.duration)}
                           </span>
                         </div>
@@ -325,10 +325,10 @@ export default function Sessions() {
 
             {/* Total Summary */}
             {Object.keys(sessionsByMonth).length > 0 && (
-              <div className="p-5 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-800/80 dark:to-slate-700/80 border-t border-emerald-200 dark:border-slate-600/50">
+              <div className="p-5 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800/80 dark:to-slate-700/80 border-t border-blue-200 dark:border-slate-600/50">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-slate-700 dark:text-slate-200">Semester Total</span>
-                  <span className="font-bold text-xl bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-300 dark:to-teal-300 bg-clip-text text-transparent font-mono">
+                  <span className="font-bold text-xl bg-gradient-to-r from-blue-400 to-cyan-400 dark:from-blue-300 dark:to-cyan-300 bg-clip-text text-transparent font-mono">
                     {formatDuration(totalTime)}
                   </span>
                 </div>
