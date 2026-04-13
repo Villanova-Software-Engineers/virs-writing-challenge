@@ -1,8 +1,7 @@
 // src/components/Timer.jsx
 import { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw, Save, CheckCircle2 } from 'lucide-react';
+import { Play, Pause, RotateCcw, Save } from 'lucide-react';
 import WarningPopup from './WarningPopup';
-import { useTodaySessions } from '../hooks/useApi';
 import { useTimerContext } from '../context/TimerContext';
 
 function Timer({ onSessionSave, onTimerUpdate }) {
@@ -10,8 +9,6 @@ function Timer({ onSessionSave, onTimerUpdate }) {
     seconds,
     isRunning,
     description,
-    sessionSavedToday,
-    setSessionSavedToday,
     handleToggle,
     handleReset,
     handleStop,
@@ -20,12 +17,22 @@ function Timer({ onSessionSave, onTimerUpdate }) {
 
   const [error, setError] = useState('');
 
-  // Sync sessionSavedToday from the API into context
-  // Backend is the source of truth - no localStorage needed for this
-  const { data: todaySessionsData } = useTodaySessions();
+  // Note: We no longer limit to one session per day
+  // Users can save multiple sessions throughout the day
+
+  // Register auto-save function for 11:59 PM auto-save
   useEffect(() => {
-    setSessionSavedToday((todaySessionsData?.sessions?.length ?? 0) > 0);
-  }, [todaySessionsData, setSessionSavedToday]);
+    window.autoSaveSession = (session) => {
+      if (onSessionSave) {
+        onSessionSave(session);
+        handleReset();
+      }
+    };
+
+    return () => {
+      delete window.autoSaveSession;
+    };
+  }, [onSessionSave, handleReset]);
 
   // Keep Dashboard's todayWritingTime stat in sync
   useEffect(() => {
@@ -53,10 +60,6 @@ function Timer({ onSessionSave, onTimerUpdate }) {
   };
 
   const handleSaveSession = () => {
-    if (sessionSavedToday) {
-      setError('You have already saved a session today. Only one session per day is allowed.');
-      return;
-    }
     if (seconds === 0) {
       setError('Cannot save a session with 0 time');
       return;
@@ -81,7 +84,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
       description: description.trim(),
     };
 
-    handleReset(); // clears context state + localStorage
+    handleReset(); // clears context state + localStorage + backend state
     setError('');
 
     if (onSessionSave) onSessionSave(session);
@@ -102,23 +105,19 @@ function Timer({ onSessionSave, onTimerUpdate }) {
           {/* Status Badge */}
           <span
             className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider mb-8 backdrop-blur-sm transition-all duration-300 ${
-              sessionSavedToday
-                ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-400/50'
-                : isRunning
+              isRunning
                 ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-600 dark:text-blue-400 border border-blue-400/50 animate-pulse'
                 : 'bg-gradient-to-r from-slate-100/80 to-slate-200/80 dark:from-slate-700/50 dark:to-slate-600/50 text-slate-700 dark:text-slate-300 border border-slate-300/50 dark:border-slate-500/50'
             }`}
           >
             <span
               className={`h-2.5 w-2.5 rounded-full ${
-                sessionSavedToday
-                  ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
-                  : isRunning
+                isRunning
                   ? 'bg-gradient-to-r from-blue-500 to-purple-500'
                   : 'bg-slate-400 dark:bg-slate-500'
               }`}
             />
-            {sessionSavedToday ? 'Session Saved' : isRunning ? 'Writing...' : 'Ready'}
+            {isRunning ? 'Writing...' : 'Ready'}
           </span>
 
           {/* Circular Timer */}
@@ -154,22 +153,17 @@ function Timer({ onSessionSave, onTimerUpdate }) {
           <div className="flex items-center gap-5">
             <button
               onClick={handleToggle}
-              disabled={sessionSavedToday}
               title={isRunning ? 'Pause' : 'Start'}
               className={`group relative flex h-16 w-16 items-center justify-center rounded-full text-white transition-all duration-300 ${
-                sessionSavedToday
-                  ? 'bg-slate-300 dark:bg-slate-600 cursor-not-allowed opacity-50'
-                  : isRunning
+                isRunning
                   ? 'bg-pink-500 hover:bg-pink-600 hover:scale-110'
                   : 'bg-primary hover:opacity-90 hover:scale-110'
               }`}
             >
               {isRunning ? <Pause className="h-7 w-7" /> : <Play className="ml-0.5 h-7 w-7" />}
-              {!sessionSavedToday && (
-                <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                  {isRunning ? 'Pause' : 'Start'}
-                </span>
-              )}
+              <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                {isRunning ? 'Pause' : 'Start'}
+              </span>
             </button>
 
             <button
@@ -219,9 +213,8 @@ function Timer({ onSessionSave, onTimerUpdate }) {
                 value={description}
                 onChange={handleDescriptionChange}
                 placeholder="What did you write about today?"
-                disabled={sessionSavedToday}
                 rows="5"
-                className="w-full px-5 py-4 text-base border-2 border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl text-gray-900 dark:text-blue-400 placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 dark:focus:ring-blue-500 dark:focus:border-blue-400 outline-none disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-all duration-300 resize-none"
+                className="w-full px-5 py-4 text-base border-2 border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl text-gray-900 dark:text-blue-400 placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 dark:focus:ring-blue-500 dark:focus:border-blue-400 outline-none transition-all duration-300 resize-none"
               />
             </div>
           </div>
@@ -230,15 +223,10 @@ function Timer({ onSessionSave, onTimerUpdate }) {
           <div className="flex justify-center pt-2">
             <button
               onClick={handleSaveSession}
-              disabled={sessionSavedToday}
-              className={`inline-flex items-center justify-center gap-2.5 px-10 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 ${
-                sessionSavedToday
-                  ? 'bg-emerald-600 text-white cursor-not-allowed'
-                  : 'bg-blue-600 dark:bg-blue-400 hover:opacity-90 text-white hover:scale-105'
-              }`}
+              className="inline-flex items-center justify-center gap-2.5 px-10 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 bg-blue-600 dark:bg-blue-400 hover:opacity-90 text-white hover:scale-105"
             >
-              {sessionSavedToday ? <CheckCircle2 className="h-5 w-5" /> : <Save className="h-5 w-5" />}
-              {sessionSavedToday ? 'Session Saved for Today' : 'Save Session'}
+              <Save className="h-5 w-5" />
+              Save Session
             </button>
           </div>
 
@@ -246,7 +234,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
           <div className="relative overflow-hidden bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 dark:from-blue-400/10 dark:via-blue-400/15 dark:to-blue-400/10 border border-blue-300 dark:border-blue-400/50 rounded-xl p-4 backdrop-blur-sm">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-blue-500/10 to-blue-500/5 dark:from-blue-400/5 dark:via-blue-400/10 dark:to-blue-400/5" />
             <p className="relative text-xs text-blue-700 dark:text-blue-400 leading-relaxed font-medium">
-              <span className="font-bold">Daily Limit:</span> You can only save one writing session per day. Track all your writing time before saving.
+              <span className="font-bold">Multiple Sessions:</span> You can save multiple writing sessions per day. Each session will be tracked separately. Sessions are automatically saved at 11:59 PM if the timer is running.
             </p>
           </div>
         </div>

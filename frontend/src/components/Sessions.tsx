@@ -15,7 +15,7 @@ export default function Sessions() {
   const sessionsPerPage = 10;
 
   const { data: semester } = useActiveSemester();
-  const { data: sessionsData, isLoading } = useSessions(1000);
+  const { data: sessionsData, isLoading } = useSessions(1000, semester?.id);
 
   const formatDuration = (seconds: number): string => {
     const h = Math.floor(seconds / 3600);

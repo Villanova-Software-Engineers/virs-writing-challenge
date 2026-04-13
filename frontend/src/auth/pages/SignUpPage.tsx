@@ -20,7 +20,7 @@ const SignUpPage: React.FC = () => {
           </div>
 
           <h1 className="mt-8 text-[clamp(38px,4.5vw,52px)] leading-[1.1] font-black text-white">
-            Join the Writing Community
+            Join Our Writing Challenge
           </h1>
           <p className="mt-6 max-w-xl text-[18px] leading-[1.75] text-white/95 dark:text-white/90 font-medium">
             Create your account to start tracking writing sessions, building streaks, and staying motivated alongside your Villanova colleagues.

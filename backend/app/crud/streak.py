@@ -5,8 +5,12 @@ from app.models import Streak
 from app.schemas.streak import StreakResponse
 
 
-def get_user_streak(user_id: int, db: Session) -> Optional[Streak]:
-    return db.query(Streak).filter(Streak.user_id == user_id).first()
+def get_user_streak(user_id: int, db: Session, semester_id: Optional[int] = None) -> Optional[Streak]:
+    query = db.query(Streak).filter(Streak.user_id == user_id)
+    # Always filter by semester_id to prevent showing stale data from other semesters
+    # If semester_id is None, only return streaks with NULL semester_id (legacy data should not be shown)
+    query = query.filter(Streak.semester_id == semester_id)
+    return query.first()
 
 
 def streak_to_response(streak: Optional[Streak]) -> StreakResponse:
@@ -19,13 +23,14 @@ def streak_to_response(streak: Optional[Streak]) -> StreakResponse:
     )
 
 
-def update_user_streak(user_id: int, db: Session) -> Streak:
+def update_user_streak(user_id: int, db: Session, semester_id: Optional[int] = None) -> Streak:
     today = date.today()
-    streak = get_user_streak(user_id, db)
+    streak = get_user_streak(user_id, db, semester_id)
 
     if not streak:
         streak = Streak(
             user_id=user_id,
+            semester_id=semester_id,
             count=1,
             longest_streak=1,
             last_date=today,
@@ -42,9 +47,9 @@ def update_user_streak(user_id: int, db: Session) -> Streak:
     if streak.last_date:
         delta = (today - streak.last_date).days
         if delta == 1:
-            new_count = streak.count + 1 
+            new_count = streak.count + 1
         else:
-            new_count = 1  
+            new_count = 1
     else:
         new_count = 1
 

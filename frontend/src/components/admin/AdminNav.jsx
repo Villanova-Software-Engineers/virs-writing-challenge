@@ -2,13 +2,13 @@ import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import { clearTokenCache, clearUserLocalStorage } from "../../services/apiClient";
-import { CalendarDays, Users, Clock, Archive, ArrowLeft, ShieldCheck, Moon, Sun } from "lucide-react";
+import { CalendarDays, Users, Clock, Archive, ArrowLeft, ShieldCheck, Moon, Sun, MessageSquare, Trophy } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 
 const adminNavItems = [
   {
     id: "access",
-    label: "Semester Management",
+    label: "Semester Code",
     icon: <CalendarDays className="w-4 h-4 flex-shrink-0" />,
   },
   {
@@ -30,6 +30,16 @@ const adminNavItems = [
     id: "archived",
     label: "Archived Semesters",
     icon: <Archive className="w-4 h-4 flex-shrink-0" />,
+  },
+  {
+    id: "messages",
+    label: "Archived Messages",
+    icon: <MessageSquare className="w-4 h-4 flex-shrink-0" />,
+  },
+  {
+    id: "leaderboard",
+    label: "Archived Leaderboard",
+    icon: <Trophy className="w-4 h-4 flex-shrink-0" />,
   },
   {
     id: "back",

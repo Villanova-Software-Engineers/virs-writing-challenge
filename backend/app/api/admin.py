@@ -13,7 +13,12 @@ from app.schemas.admin import (
     AdminSessionsListResponse,
     MessageUpdateRequest,
     PinMessageRequest,
+    AdminSessionCreate,
+    AdminSessionUpdate,
 )
+from app.schemas.session import WritingSessionResponse
+from app.schemas.message import MessageListResponse
+from app.schemas.leaderboard import LeaderboardResponse
 from app.crud.admin import (
     get_all_users,
     get_user_by_id,
@@ -29,7 +34,14 @@ from app.crud.admin import (
     get_message_by_id,
     get_comment_by_id,
     user_to_list_item,
+    get_session_by_id,
+    admin_create_session,
+    admin_update_session,
+    admin_delete_session,
 )
+from app.crud.session import session_to_response
+from app.crud.message import get_messages_paginated, message_to_response
+from app.crud.leaderboard import get_leaderboard
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -235,4 +247,145 @@ async def admin_delete_comment_route(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
 
     admin_delete_comment(comment, db)
+    return None
+
+
+@router.get("/messages/archived", response_model=MessageListResponse)
+@limiter.limit("30/minute;300/hour")
+async def get_archived_messages(
+    request: Request,
+    semester_id: int,
+    limit: int = 20,
+    cursor: Optional[str] = None,
+    current_user: CurrentUser = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Get archived messages from a specific semester (admin only).
+
+    - semester_id: The semester ID to retrieve messages from
+    - limit: Number of messages to return (default: 20, max: 100)
+    - cursor: Cursor for pagination
+    """
+    messages, next_cursor, has_more = get_messages_paginated(
+        db, limit, cursor, semester_id
+    )
+
+    return MessageListResponse(
+        messages=[message_to_response(msg) for msg in messages],
+        next_cursor=next_cursor,
+        has_more=has_more
+    )
+
+
+@router.get("/leaderboard/archived", response_model=LeaderboardResponse)
+@limiter.limit("30/minute;300/hour")
+async def get_archived_leaderboard(
+    request: Request,
+    semester_id: int,
+    limit: int = 50,
+    current_user: CurrentUser = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Get archived leaderboard from a specific semester (admin only).
+
+    - semester_id: The semester ID to retrieve leaderboard from
+    - limit: Number of entries to return (default: 50, max: 100)
+    """
+    entries, retrieved_semester_id, semester_name = get_leaderboard(
+        db, current_user.id, current_user.uid, semester_id, limit
+    )
+
+    return LeaderboardResponse(
+        entries=entries,
+        semester_id=retrieved_semester_id,
+        semester_name=semester_name
+    )
+
+
+@router.post("/sessions", response_model=WritingSessionResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("20/minute;200/hour")
+async def admin_create_session_route(
+    request: Request,
+    data: AdminSessionCreate,
+    current_user: CurrentUser = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Create a writing session for any user (admin only)"""
+    if data.duration <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Duration must be positive"
+        )
+
+    user = get_user_by_id(data.user_id, db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    try:
+        session = admin_create_session(data, db)
+        return session_to_response(session)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid datetime format"
+        )
+
+
+@router.patch("/sessions/{session_id}", response_model=WritingSessionResponse)
+@limiter.limit("20/minute;200/hour")
+async def admin_update_session_route(
+    request: Request,
+    session_id: int,
+    data: AdminSessionUpdate,
+    current_user: CurrentUser = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Update a writing session (admin only)"""
+    session = get_session_by_id(session_id, db)
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Session not found"
+        )
+
+    if data.duration is not None and data.duration <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Duration must be positive"
+        )
+
+    try:
+        session = admin_update_session(session, data, db)
+        return session_to_response(session)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid datetime format"
+        )
+
+
+@router.delete("/sessions/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("20/minute;200/hour")
+async def admin_delete_session_route(
+    request: Request,
+    session_id: int,
+    current_user: CurrentUser = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Delete a writing session (admin only)"""
+    session = get_session_by_id(session_id, db)
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Session not found"
+        )
+
+    admin_delete_session(session, db)
     return None

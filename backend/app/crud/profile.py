@@ -113,29 +113,38 @@ def update_user_profile(
     )
 
 
-def get_user_stats(db: Session, user_id: int) -> UserStats:
-    """Get user writing statistics"""
-    streak = db.query(Streak).filter(Streak.user_id == user_id).first()
+def get_user_stats(db: Session, user_id: int, semester_id: Optional[int] = None) -> UserStats:
+    """Get user writing statistics for a specific semester"""
+    # Get streak for the current semester
+    streak = db.query(Streak).filter(
+        Streak.user_id == user_id,
+        Streak.semester_id == semester_id
+    ).first()
 
+    # Get total time for the current semester
     total_time_result = db.query(func.sum(WritingSession.duration)).filter(
-        WritingSession.user_id == user_id
+        WritingSession.user_id == user_id,
+        WritingSession.semester_id == semester_id
     ).scalar()
     total_time = total_time_result or 0
 
+    # Get active days for the current semester
     active_days_result = db.query(func.count(func.distinct(func.date(WritingSession.started_at)))).filter(
-        WritingSession.user_id == user_id
+        WritingSession.user_id == user_id,
+        WritingSession.semester_id == semester_id
     ).scalar()
     active_days = active_days_result or 0
 
-    active_semester = db.query(Semester).filter(Semester.is_active == True).first()
+    # Get semester info
+    semester = db.query(Semester).filter(Semester.id == semester_id).first() if semester_id else None
 
     return UserStats(
         total_time=total_time,
         current_streak=streak.count if streak else 0,
         longest_streak=streak.longest_streak if streak else 0,
         active_days=active_days,
-        semester_id=active_semester.id if active_semester else None,
-        semester_name=active_semester.name if active_semester else None,
+        semester_id=semester.id if semester else None,
+        semester_name=semester.name if semester else None,
     )
 
 

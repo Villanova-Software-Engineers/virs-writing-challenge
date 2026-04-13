@@ -70,18 +70,35 @@ async def require_semester_registration(
     db: Session = Depends(get_db),
 ) -> CurrentUser:
     """Require user to be registered for a semester (admins are exempt)"""
-    # Admins don't need to be registered for a semester
-    if current_user.is_admin:
-        return current_user
-
-    # Check if user has a current_semester_id
-    from app.models import User
+    from app.models import User, Semester
     user = db.query(User).filter(User.id == current_user.id).first()
 
-    if not user or not user.current_semester_id:
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    # Admins don't need to be registered for a semester
+    # But we still try to get their current semester if they have one
+    if current_user.is_admin:
+        # Try to get active semester for admin
+        if user.current_semester_id:
+            current_user.current_semester_id = user.current_semester_id
+        else:
+            # If admin has no current_semester_id, use the active semester
+            active_semester = db.query(Semester).filter(Semester.is_active == True).first()
+            if active_semester:
+                current_user.current_semester_id = active_semester.id
+        return current_user
+
+    # For non-admins, require semester registration
+    if not user.current_semester_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You must join a semester before accessing this resource"
         )
 
+    # Populate the current_semester_id in the CurrentUser object
+    current_user.current_semester_id = user.current_semester_id
     return current_user

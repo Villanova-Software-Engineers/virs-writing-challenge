@@ -17,7 +17,7 @@ async def get_current_streak(
     current_user: CurrentUser = Depends(require_semester_registration),
     db: Session = Depends(get_db),
 ):
-    streak = get_user_streak(current_user.id, db)
+    streak = get_user_streak(current_user.id, db, current_user.current_semester_id)
     return streak_to_response(streak)
 
 
@@ -28,5 +28,5 @@ async def update_streak(
     current_user: CurrentUser = Depends(require_semester_registration),
     db: Session = Depends(get_db),
 ):
-    streak = update_user_streak(current_user.id, db)
+    streak = update_user_streak(current_user.id, db, current_user.current_semester_id)
     return streak_to_response(streak)

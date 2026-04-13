@@ -36,7 +36,8 @@ def message_to_response(msg: Message) -> MessageResponse:
 def get_messages_paginated(
     db: Session,
     limit: int = 20,
-    cursor: Optional[str] = None
+    cursor: Optional[str] = None,
+    semester_id: Optional[int] = None
 ) -> Tuple[List[Message], Optional[str], bool]:
 
     # Limit maximum page size
@@ -50,6 +51,10 @@ def get_messages_paginated(
             joinedload(Message.liked_by),
         )
     )
+
+    # Filter by semester
+    if semester_id:
+        query = query.filter(Message.semester_id == semester_id)
 
     if cursor:
         try:
@@ -100,10 +105,11 @@ def get_messages_paginated(
     return messages, next_cursor, has_more
 
 
-def create_message(data: MessageCreate, user_id: int, db: Session) -> Message:
+def create_message(data: MessageCreate, user_id: int, db: Session, semester_id: Optional[int] = None) -> Message:
     message = Message(
         content=data.content.strip(),
         author_id=user_id,
+        semester_id=semester_id,
     )
     db.add(message)
     db.commit()
@@ -159,11 +165,12 @@ def toggle_message_like(message: Message, user: User, db: Session) -> Message:
     return message
 
 
-def create_comment(message_id: int, data: CommentCreate, user_id: int, db: Session) -> Message:
+def create_comment(message_id: int, data: CommentCreate, user_id: int, db: Session, semester_id: Optional[int] = None) -> Message:
     comment = Comment(
         content=data.content.strip(),
         message_id=message_id,
         author_id=user_id,
+        semester_id=semester_id,
     )
     db.add(comment)
     db.commit()

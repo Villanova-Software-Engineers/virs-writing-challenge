@@ -2,12 +2,14 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc
 from typing import List, Tuple, Optional
 from datetime import datetime
-from app.models import User, WritingSession, Message, Comment
+from app.models import User, WritingSession, Message, Comment, Semester
 from app.schemas.admin import (
     UserListItem,
     UpdateUserRequest,
     AdminWritingSessionResponse,
     MessageUpdateRequest,
+    AdminSessionCreate,
+    AdminSessionUpdate,
 )
 
 
@@ -68,8 +70,12 @@ def get_all_sessions(
     
     query = db.query(WritingSession).options(joinedload(WritingSession.user))
 
-    if semester_id:
+    # Filter by exact semester match to prevent showing sessions from deleted semesters
+    if semester_id is not None:
         query = query.filter(WritingSession.semester_id == semester_id)
+    else:
+        # Only sessions with NULL semester_id (no active semester case)
+        query = query.filter(WritingSession.semester_id.is_(None))
 
     if user_id:
         query = query.filter(WritingSession.user_id == user_id)
@@ -126,3 +132,47 @@ def get_message_by_id(message_id: int, db: Session) -> Optional[Message]:
 
 def get_comment_by_id(comment_id: int, db: Session) -> Optional[Comment]:
     return db.query(Comment).filter(Comment.id == comment_id).first()
+
+
+def get_session_by_id(session_id: int, db: Session) -> Optional[WritingSession]:
+    return db.query(WritingSession).filter(WritingSession.id == session_id).first()
+
+
+def admin_create_session(data: AdminSessionCreate, db: Session) -> WritingSession:
+    semester = db.query(Semester).filter(Semester.is_active == True).first()
+
+    started_at = datetime.fromisoformat(data.started_at.replace("Z", "+00:00"))
+    ended_at = datetime.fromisoformat(data.ended_at.replace("Z", "+00:00"))
+
+    session = WritingSession(
+        user_id=data.user_id,
+        duration=data.duration,
+        description=data.description,
+        started_at=started_at,
+        ended_at=ended_at,
+        semester_id=semester.id if semester else None,
+    )
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+    return session
+
+
+def admin_update_session(session: WritingSession, data: AdminSessionUpdate, db: Session) -> WritingSession:
+    if data.duration is not None:
+        session.duration = data.duration
+    if data.description is not None:
+        session.description = data.description
+    if data.started_at is not None:
+        session.started_at = datetime.fromisoformat(data.started_at.replace("Z", "+00:00"))
+    if data.ended_at is not None:
+        session.ended_at = datetime.fromisoformat(data.ended_at.replace("Z", "+00:00"))
+
+    db.commit()
+    db.refresh(session)
+    return session
+
+
+def admin_delete_session(session: WritingSession, db: Session) -> None:
+    db.delete(session)
+    db.commit()

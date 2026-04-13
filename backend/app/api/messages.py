@@ -42,7 +42,9 @@ async def get_messages(
     - limit: Number of messages to return (default: 20, max: 100)
     - cursor: Cursor for pagination (format: "pinned_timestamp_id" or "unpinned_timestamp_id")
     """
-    messages, next_cursor, has_more = get_messages_paginated(db, limit, cursor)
+    messages, next_cursor, has_more = get_messages_paginated(
+        db, limit, cursor, current_user.current_semester_id
+    )
 
     return MessageListResponse(
         messages=[message_to_response(msg) for msg in messages],
@@ -67,7 +69,7 @@ async def create_message_route(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    message = create_message(data, user.id, db)
+    message = create_message(data, user.id, db, current_user.current_semester_id)
     return message_to_response(message)
 
 
@@ -155,5 +157,5 @@ async def add_comment_route(
     if not message:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
-    message = create_comment(message_id, data, current_user.id, db)
+    message = create_comment(message_id, data, current_user.id, db, current_user.current_semester_id)
     return message_to_response(message)

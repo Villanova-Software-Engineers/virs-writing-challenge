@@ -4,6 +4,8 @@ import UserManagementPanel from "./UserManagementPanel";
 import AdminManagementPanel from "./AdminManagementPanel";
 import TimeLogPanel from "./TimeLogPanel";
 import ArchivedSemestersPanel from "./ArchivedSemestersPanel";
+import ArchivedMessagesPanel from "./ArchivedMessagesPanel";
+import ArchivedLeaderboardPanel from "./ArchivedLeaderboardPanel";
 import AdminNav from "./AdminNav";
 
 function AdminPage() {
@@ -14,6 +16,8 @@ function AdminPage() {
       { id: "admins", label: "Admin Management", content: <AdminManagementPanel /> },
       { id: "timelog", label: "Writing Sessions", content: <TimeLogPanel /> },
       { id: "archived", label: "Archived Semesters", content: <ArchivedSemestersPanel /> },
+      { id: "messages", label: "Past Message Boards", content: <ArchivedMessagesPanel /> },
+      { id: "leaderboard", label: "Past Leaderboards", content: <ArchivedLeaderboardPanel /> },
     ],
     []
   );

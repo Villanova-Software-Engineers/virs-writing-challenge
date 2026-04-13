@@ -61,6 +61,8 @@ export const queryKeys = {
   // Admin
   admin: ["admin"] as const,
   adminUsers: ["admin", "users"] as const,
+  adminArchivedMessages: (semesterId: number) => ["admin", "messages", "archived", semesterId] as const,
+  adminArchivedLeaderboard: (semesterId: number) => ["admin", "leaderboard", "archived", semesterId] as const,
 } as const;
 
 // ── Streak Hooks ────────────────────────────────────────────────────────────
@@ -128,8 +130,13 @@ export function useJoinSemester() {
     mutationFn: ({ semesterId, accessCode }: { semesterId: number; accessCode: string }) =>
       api.post<Semester>(`/api/semesters/${semesterId}/join`, { access_code: accessCode }),
     onSuccess: () => {
+      // Invalidate all semester-dependent queries when joining a new semester
       queryClient.invalidateQueries({ queryKey: queryKeys.semesterActive });
       queryClient.invalidateQueries({ queryKey: queryKeys.profile });
+      queryClient.invalidateQueries({ queryKey: queryKeys.streak });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
+      queryClient.invalidateQueries({ queryKey: queryKeys.leaderboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.messages });
     },
   });
 }
@@ -345,6 +352,69 @@ export function useTodaySessions(
   });
 }
 
+// ── Session State Hooks ─────────────────────────────────────────────────────
+export interface SessionState {
+  id: number;
+  user_id: number;
+  accumulated_seconds: number;
+  description: string | null;
+  is_running: boolean;
+  session_start_time: string | null;
+  last_pause_time: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SessionStateUpdate {
+  accumulated_seconds?: number;
+  description?: string;
+  is_running?: boolean;
+  session_start_time?: string | null;
+  last_pause_time?: string | null;
+}
+
+export function useSessionState(
+  options?: Omit<UseQueryOptions<SessionState>, "queryKey" | "queryFn">
+) {
+  return useQuery({
+    queryKey: [...queryKeys.sessions, "state"],
+    queryFn: () => api.get<SessionState>("/api/sessions/state"),
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    ...options,
+  });
+}
+
+export function useUpdateSessionState(
+  options?: UseMutationOptions<SessionState, Error, SessionStateUpdate>
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: SessionStateUpdate) =>
+      api.patch<SessionState, SessionStateUpdate>("/api/sessions/state", data),
+    onSuccess: (data) => {
+      queryClient.setQueryData([...queryKeys.sessions, "state"], data);
+    },
+    ...options,
+  });
+}
+
+export function useResetSessionState(
+  options?: UseMutationOptions<SessionState, Error, void>
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => api.post<SessionState>("/api/sessions/state/reset"),
+    onSuccess: (data) => {
+      queryClient.setQueryData([...queryKeys.sessions, "state"], data);
+    },
+    ...options,
+  });
+}
+
 // ── Admin Hooks (Admin only) ────────────────────────────────────────────────
 
 // Admin - Create Semester
@@ -418,6 +488,42 @@ export function useDeleteSemester(
       queryClient.invalidateQueries({ queryKey: queryKeys.semesters });
       queryClient.invalidateQueries({ queryKey: queryKeys.semesterActive });
     },
+    ...options,
+  });
+}
+
+// Admin - Archived Messages by Semester
+export function useArchivedMessages(
+  semesterId: number | null,
+  options?: Omit<UseQueryOptions<MessageListResponse>, "queryKey" | "queryFn">
+) {
+  return useQuery({
+    queryKey: queryKeys.adminArchivedMessages(semesterId ?? 0),
+    queryFn: () =>
+      api.get<MessageListResponse>("/api/admin/messages/archived", {
+        semester_id: semesterId!,
+        limit: 100,
+      }),
+    enabled: !!semesterId,
+    staleTime: 60 * 1000,
+    ...options,
+  });
+}
+
+// Admin - Archived Leaderboard by Semester
+export function useArchivedLeaderboard(
+  semesterId: number | null,
+  options?: Omit<UseQueryOptions<LeaderboardResponse>, "queryKey" | "queryFn">
+) {
+  return useQuery({
+    queryKey: queryKeys.adminArchivedLeaderboard(semesterId ?? 0),
+    queryFn: () =>
+      api.get<LeaderboardResponse>("/api/admin/leaderboard/archived", {
+        semester_id: semesterId!,
+        limit: 100,
+      }),
+    enabled: !!semesterId,
+    staleTime: 60 * 1000,
     ...options,
   });
 }
@@ -585,6 +691,73 @@ export function useAdminDeleteComment(
       api.delete<void>(`/api/admin/comments/${commentId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.messages });
+    },
+    ...options,
+  });
+}
+
+// Admin - Session Management
+export interface AdminSessionCreate {
+  user_id: number;
+  duration: number;
+  started_at: string;
+  ended_at: string;
+  description?: string;
+}
+
+export interface AdminSessionUpdate {
+  duration?: number;
+  description?: string;
+  started_at?: string;
+  ended_at?: string;
+}
+
+export function useAdminCreateSession(
+  options?: UseMutationOptions<WritingSession, Error, AdminSessionCreate>
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: AdminSessionCreate) =>
+      api.post<WritingSession, AdminSessionCreate>("/api/admin/sessions", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "sessions"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
+      queryClient.invalidateQueries({ queryKey: queryKeys.leaderboard });
+    },
+    ...options,
+  });
+}
+
+export function useAdminUpdateSession(
+  options?: UseMutationOptions<WritingSession, Error, { sessionId: number; data: AdminSessionUpdate }>
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sessionId, data }) =>
+      api.patch<WritingSession, AdminSessionUpdate>(`/api/admin/sessions/${sessionId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "sessions"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
+      queryClient.invalidateQueries({ queryKey: queryKeys.leaderboard });
+    },
+    ...options,
+  });
+}
+
+export function useAdminDeleteSession(
+  options?: UseMutationOptions<void, Error, number>
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (sessionId: number) =>
+      api.delete<void>(`/api/admin/sessions/${sessionId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "sessions"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
+      queryClient.invalidateQueries({ queryKey: queryKeys.leaderboard });
     },
     ...options,
   });

@@ -23,6 +23,7 @@ class User(Base):
     comments = relationship("Comment", back_populates="author", cascade="all, delete-orphan")
     streak = relationship("Streak", back_populates="user", uselist=False, cascade="all, delete-orphan")
     writing_sessions = relationship("WritingSession", back_populates="user", cascade="all, delete-orphan")
+    session_state = relationship("SessionState", back_populates="user", uselist=False, cascade="all, delete-orphan")
     current_semester = relationship("Semester", foreign_keys=[current_semester_id])
 
     @property

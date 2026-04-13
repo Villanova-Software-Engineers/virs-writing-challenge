@@ -19,18 +19,30 @@ def get_session_stats(db: Session, semester_id: Optional[int]) -> Dict[int, Any]
         func.sum(WritingSession.duration).label("total_time"),
         func.count(func.distinct(func.date(WritingSession.started_at))).label("active_days"),
     )
-    if semester_id:
+    # Filter by exact semester match to prevent showing sessions from deleted semesters
+    if semester_id is not None:
         query = query.filter(WritingSession.semester_id == semester_id)
+    else:
+        # Only sessions with NULL semester_id (no active semester case)
+        query = query.filter(WritingSession.semester_id.is_(None))
 
     return {s.user_id: s for s in query.group_by(WritingSession.user_id).all()}
 
 
-def get_users_with_streaks(db: Session) -> List:
-    """Get all users with streak data"""
-    return db.query(
+def get_users_with_streaks(db: Session, semester_id: Optional[int] = None) -> List:
+    """Get all users with streak data filtered by semester"""
+    query = db.query(
         User.id, User.uid, User.first_name, User.last_name, User.email,
         Streak.count.label("streak")
-    ).outerjoin(Streak, User.id == Streak.user_id).all()
+    )
+    if semester_id:
+        query = query.outerjoin(
+            Streak,
+            (User.id == Streak.user_id) & (Streak.semester_id == semester_id)
+        )
+    else:
+        query = query.outerjoin(Streak, User.id == Streak.user_id)
+    return query.all()
 
 
 def build_user_stats(users: List, session_map: Dict) -> List[Dict]:
@@ -53,7 +65,7 @@ def build_user_stats(users: List, session_map: Dict) -> List[Dict]:
             "active_days": active_days,
         })
 
-    stats.sort(key=lambda x: (-x["total_time"], -x["streak"]))
+    stats.sort(key=lambda x: (-x["streak"], -x["active_days"], -x["total_time"]))
     return stats
 
 
@@ -69,15 +81,23 @@ def add_current_user_if_missing(
     if not user:
         return entries
 
-    streak = db.query(Streak).filter(Streak.user_id == current_user_id).first()
+    # Filter streak by semester
+    streak_query = db.query(Streak).filter(Streak.user_id == current_user_id)
+    if semester_id:
+        streak_query = streak_query.filter(Streak.semester_id == semester_id)
+    streak = streak_query.first()
 
     query = db.query(
         func.sum(WritingSession.duration).label("total_time"),
         func.count(func.distinct(func.date(WritingSession.started_at))).label("active_days"),
     ).filter(WritingSession.user_id == current_user_id)
 
-    if semester_id:
+    # Filter by exact semester match to prevent showing sessions from deleted semesters
+    if semester_id is not None:
         query = query.filter(WritingSession.semester_id == semester_id)
+    else:
+        # Only sessions with NULL semester_id (no active semester case)
+        query = query.filter(WritingSession.semester_id.is_(None))
 
     result = query.first()
 

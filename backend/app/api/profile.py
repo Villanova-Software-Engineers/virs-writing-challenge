@@ -56,7 +56,7 @@ async def get_profile_stats(
     db: Session = Depends(get_db),
 ):
     """Get the current user's writing statistics"""
-    return get_user_stats(db=db, user_id=current_user.id)
+    return get_user_stats(db=db, user_id=current_user.id, semester_id=current_user.current_semester_id)
 
 
 @router.get("/history", response_model=UserStatsHistory)

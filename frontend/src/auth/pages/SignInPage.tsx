@@ -66,7 +66,7 @@ const SignInPage: React.FC = () => {
           </div>
 
           <h1 className="mt-8 text-[clamp(38px,4.5vw,52px)] leading-[1.1] font-black text-white">
-            Track Your Writing Journey
+            Join Our Writing Challenge
           </h1>
           <p className="mt-6 max-w-xl text-[18px] leading-[1.75] text-white/95 dark:text-white/90 font-medium">
             Join Villanova faculty and post-docs in building consistent writing habits. Track sessions, celebrate streaks, and stay motivated with your academic community.

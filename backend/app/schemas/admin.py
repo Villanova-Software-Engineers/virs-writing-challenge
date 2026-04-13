@@ -51,3 +51,18 @@ class MessageUpdateRequest(BaseModel):
 
 class PinMessageRequest(BaseModel):
     is_pinned: bool
+
+
+class AdminSessionCreate(BaseModel):
+    user_id: int
+    duration: int
+    started_at: str
+    ended_at: str
+    description: Optional[str] = None
+
+
+class AdminSessionUpdate(BaseModel):
+    duration: Optional[int] = None
+    description: Optional[str] = None
+    started_at: Optional[str] = None
+    ended_at: Optional[str] = None

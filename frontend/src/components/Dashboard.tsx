@@ -19,6 +19,7 @@ import {
   useUpdateStreak,
   useActiveSemester,
   useSessions,
+  useTodaySessions,
   useSaveSession,
   useInfiniteMessages,
   useLikeMessage,
@@ -157,7 +158,8 @@ function RecentMessagesPanel() {
 function RecentSessionsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { data: sessionsData, isLoading } = useSessions(5);
+  const { data: semester } = useActiveSemester();
+  const { data: sessionsData, isLoading } = useSessions(5, semester?.id);
 
   const formatDuration = (seconds: number): string => {
     const h = Math.floor(seconds / 3600);
@@ -280,33 +282,13 @@ export default function Dashboard() {
 
   const { data: streak, isLoading: streakLoading } = useCurrentStreak();
   const { data: semester } = useActiveSemester();
-  const { data: allSessionsData } = useSessions(1000); // Get all sessions for total
+  const { data: allSessionsData } = useSessions(1000, semester?.id); // Get sessions for current semester
+  const { data: todaySessionsData } = useTodaySessions();
   const updateStreak = useUpdateStreak();
   const saveSession = useSaveSession();
 
-  // Calculate today's total time from saved sessions (using EST/EDT)
-  const todayWritingTime = (() => {
-    if (!allSessionsData?.sessions) return currentTimerSeconds;
-
-    // Get today's start in EST/EDT (midnight in Eastern Time)
-    // Convert current time to EST by getting UTC time and subtracting 5 hours
-    const now = new Date();
-    const estOffset = -5 * 60; // EST is UTC-5 (minutes)
-    const estTime = new Date(now.getTime() + (now.getTimezoneOffset() + estOffset) * 60000);
-
-    // Set to midnight EST
-    const todayStart = new Date(estTime.getFullYear(), estTime.getMonth(), estTime.getDate(), 0, 0, 0, 0);
-    // Convert back to UTC for comparison
-    const todayStartUTC = new Date(todayStart.getTime() - (now.getTimezoneOffset() + estOffset) * 60000);
-
-    const todaySessions = allSessionsData.sessions.filter(session => {
-      const sessionDate = new Date(session.started_at);
-      return sessionDate >= todayStartUTC;
-    });
-
-    const todayTotal = todaySessions.reduce((sum, session) => sum + session.duration, 0);
-    return todayTotal + currentTimerSeconds;
-  })();
+  // Calculate today's total time using backend endpoint (properly handles EST/EDT)
+  const todayWritingTime = (todaySessionsData?.total_time ?? 0) + currentTimerSeconds;
 
   const handleTimerUpdate = useCallback((seconds: number) => {
     setCurrentTimerSeconds(seconds);
@@ -367,16 +349,6 @@ export default function Dashboard() {
       <div className="space-y-6">
         {/* Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Semester Total */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5">
-            <div className="text-sm font-semibold text-muted uppercase tracking-wide mb-2">
-              Semester Total
-            </div>
-            <div className="text-3xl font-bold text-primary font-mono">
-              {allSessionsData ? formatTime(allSessionsData.total_time) : "00:00:00"}
-            </div>
-          </div>
-
           {/* Streak */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5">
             <div className="text-sm font-semibold text-muted uppercase tracking-wide mb-2">
@@ -405,6 +377,16 @@ export default function Dashboard() {
             </div>
             <div className="text-3xl font-bold text-text font-mono">
               {formatTime(todayWritingTime)}
+            </div>
+          </div>
+
+          {/* Semester Total */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5">
+            <div className="text-sm font-semibold text-muted uppercase tracking-wide mb-2">
+              Semester Total
+            </div>
+            <div className="text-3xl font-bold text-primary font-mono">
+              {allSessionsData ? formatTime(allSessionsData.total_time) : "00:00:00"}
             </div>
           </div>
         </div>
