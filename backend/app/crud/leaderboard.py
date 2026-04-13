@@ -19,7 +19,7 @@ def get_leaderboard(
 ) -> tuple[List[LeaderboardEntry], Optional[int], Optional[str]]:
     """Get ranked leaderboard entries"""
     session_map = get_session_stats(db, semester_id)
-    users = get_users_with_streaks(db)
+    users = get_users_with_streaks(db, semester_id)
     user_stats = build_user_stats(users, session_map)[:limit]
 
     entries = [

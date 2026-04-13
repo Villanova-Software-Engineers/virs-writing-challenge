@@ -3,8 +3,8 @@ from sqlalchemy import desc
 from typing import List, Optional, Tuple
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from app.models import WritingSession, Semester
-from app.schemas.session import WritingSessionCreate, WritingSessionResponse
+from app.models import WritingSession, Semester, SessionState
+from app.schemas.session import WritingSessionCreate, WritingSessionResponse, SessionStateResponse, SessionStateUpdate
 
 
 def session_to_response(session: WritingSession) -> WritingSessionResponse:
@@ -78,3 +78,69 @@ def get_today_sessions(user_id: int, db: Session) -> Tuple[List[WritingSession],
     total_time = sum(s.duration for s in sessions)
 
     return sessions, total_time
+
+
+# SessionState CRUD functions
+def session_state_to_response(state: SessionState) -> SessionStateResponse:
+    return SessionStateResponse(
+        id=state.id,
+        user_id=state.user_id,
+        accumulated_seconds=state.accumulated_seconds,
+        description=state.description,
+        is_running=state.is_running,
+        session_start_time=state.session_start_time.isoformat() if state.session_start_time else None,
+        last_pause_time=state.last_pause_time.isoformat() if state.last_pause_time else None,
+        created_at=state.created_at.isoformat() if state.created_at else "",
+        updated_at=state.updated_at.isoformat() if state.updated_at else "",
+    )
+
+
+def get_or_create_session_state(user_id: int, db: Session) -> SessionState:
+    state = db.query(SessionState).filter(SessionState.user_id == user_id).first()
+    if not state:
+        state = SessionState(user_id=user_id)
+        db.add(state)
+        db.commit()
+        db.refresh(state)
+    return state
+
+
+def update_session_state(
+    user_id: int,
+    data: SessionStateUpdate,
+    db: Session
+) -> SessionState:
+    state = get_or_create_session_state(user_id, db)
+
+    if data.accumulated_seconds is not None:
+        state.accumulated_seconds = data.accumulated_seconds
+    if data.description is not None:
+        state.description = data.description
+    if data.is_running is not None:
+        state.is_running = data.is_running
+    if data.session_start_time is not None:
+        if data.session_start_time:
+            state.session_start_time = datetime.fromisoformat(data.session_start_time.replace("Z", "+00:00"))
+        else:
+            state.session_start_time = None
+    if data.last_pause_time is not None:
+        if data.last_pause_time:
+            state.last_pause_time = datetime.fromisoformat(data.last_pause_time.replace("Z", "+00:00"))
+        else:
+            state.last_pause_time = None
+
+    db.commit()
+    db.refresh(state)
+    return state
+
+
+def reset_session_state(user_id: int, db: Session) -> SessionState:
+    state = get_or_create_session_state(user_id, db)
+    state.accumulated_seconds = 0
+    state.description = None
+    state.is_running = False
+    state.session_start_time = None
+    state.last_pause_time = None
+    db.commit()
+    db.refresh(state)
+    return state
