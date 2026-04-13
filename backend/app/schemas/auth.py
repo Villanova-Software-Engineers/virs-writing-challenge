@@ -9,6 +9,7 @@ class CurrentUser(BaseModel):
     email: Optional[str] = None
     display_name: Optional[str] = None
     is_admin: bool = False
+    current_semester_id: Optional[int] = None
 
     class Config:
         from_attributes = True
