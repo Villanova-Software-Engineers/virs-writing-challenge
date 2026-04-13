@@ -118,9 +118,10 @@ interface MessageCardProps {
   msg: MessageResponse;
   currentUserId: string;
   isAdmin: boolean;
+  readOnly?: boolean;
 }
 
-function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
+export function MessageCard({ msg, currentUserId, isAdmin, readOnly = false }: MessageCardProps) {
   const meta = CATEGORY_META[msg.category as keyof typeof CATEGORY_META] ?? CATEGORY_META.win;
   const isOwner = msg.author_uid === currentUserId;
   const hasLiked = msg.likes.includes(currentUserId);
@@ -130,12 +131,19 @@ function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
   const [showComments, setShowComments] = useState(msg.comments.length > 0);
   const [commentInput, setCommentInput] = useState("");
 
+  // Only initialize mutations if not in readOnly mode
   const likeMutation = useLikeMessage();
   const commentMutation = useAddComment();
   const editMutation = useEditMessage();
   const pinMutation = usePinMessage();
   const deleteMutation = useAdminDeleteMessage();
   const deleteCommentMutation = useAdminDeleteComment();
+
+  // In read-only mode, disable all interactive features
+  const canEdit = !readOnly && isOwner && !isAdmin;
+  const canLike = !readOnly;
+  const canComment = !readOnly;
+  const canAdminActions = !readOnly && isAdmin;
 
   const handleSaveEdit = () => {
     if (editValue.trim()) {
@@ -213,7 +221,7 @@ function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
 
             {/* Action buttons */}
             <div className="flex gap-1 shrink-0">
-              {isAdmin && (
+              {canAdminActions && (
                 <>
                   <button
                     onClick={handlePin}
@@ -237,7 +245,7 @@ function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
                   </button>
                 </>
               )}
-              {isOwner && !editing && !isAdmin && (
+              {canEdit && !editing && (
                 <button
                   onClick={() => setEditing(true)}
                   className="p-1.5 rounded-lg text-muted hover:text-[#003366] dark:hover:text-primary hover:bg-background transition-colors"
@@ -284,18 +292,25 @@ function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
           {/* Actions Row */}
           <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-slate-200 dark:border-slate-600">
             {/* Like */}
-            <button
-              onClick={handleLike}
-              disabled={likeMutation.isPending}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                hasLiked
-                  ? "bg-slate-900 dark:bg-slate-700 text-white shadow-sm"
-                  : "text-slate-700 dark:text-slate-300 hover:bg-background hover:shadow-sm"
-              }`}
-            >
-              <ThumbsUp size={14} />
-              {msg.likes.length > 0 && <span>{msg.likes.length}</span>}
-            </button>
+            {canLike ? (
+              <button
+                onClick={handleLike}
+                disabled={likeMutation.isPending}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  hasLiked
+                    ? "bg-slate-900 dark:bg-slate-700 text-white shadow-sm"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-background hover:shadow-sm"
+                }`}
+              >
+                <ThumbsUp size={14} />
+                {msg.likes.length > 0 && <span>{msg.likes.length}</span>}
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <ThumbsUp size={14} />
+                {msg.likes.length > 0 && <span>{msg.likes.length}</span>}
+              </div>
+            )}
 
             {/* Comments toggle */}
             <button
@@ -312,31 +327,33 @@ function MessageCard({ msg, currentUserId, isAdmin }: MessageCardProps) {
           {showComments && (
             <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600 space-y-2.5">
               {msg.comments.map((c) => (
-                <CommentItem key={c.id} comment={c} isAdmin={isAdmin} onDelete={handleDeleteComment} />
+                <CommentItem key={c.id} comment={c} isAdmin={canAdminActions} onDelete={canAdminActions ? handleDeleteComment : undefined} />
               ))}
 
-              {/* Add Comment */}
-              <div className="flex gap-3 mt-3">
-                <div className="shrink-0 w-8 h-8 rounded-full bg-[#003366] dark:bg-primary text-white flex items-center justify-center text-xs font-bold shadow-sm">
-                  {getInitials(auth.currentUser?.displayName || auth.currentUser?.email?.split("@")[0] || "U")}
+              {/* Add Comment - only show if not readOnly */}
+              {canComment && (
+                <div className="flex gap-3 mt-3">
+                  <div className="shrink-0 w-8 h-8 rounded-full bg-[#003366] dark:bg-primary text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                    {getInitials(auth.currentUser?.displayName || auth.currentUser?.email?.split("@")[0] || "U")}
+                  </div>
+                  <div className="flex-1 flex gap-2">
+                    <input
+                      value={commentInput}
+                      onChange={(e) => setCommentInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handlePostComment()}
+                      placeholder="Add a comment..."
+                      className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-background px-4 py-2.5 text-sm text-text placeholder-muted focus:outline-none focus:ring-2 focus:ring-[#003366] dark:focus:ring-primary focus:border-transparent shadow-sm"
+                    />
+                    <button
+                      onClick={handlePostComment}
+                      disabled={!commentInput.trim() || commentMutation.isPending}
+                      className="p-2.5 rounded-lg bg-[#003366] dark:bg-primary disabled:bg-slate-300 dark:disabled:bg-slate-600 text-white transition-colors shadow-sm hover:bg-[#002244] dark:hover:bg-primary/80"
+                    >
+                      {commentMutation.isPending ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+                    </button>
+                  </div>
                 </div>
-                <div className="flex-1 flex gap-2">
-                  <input
-                    value={commentInput}
-                    onChange={(e) => setCommentInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handlePostComment()}
-                    placeholder="Add a comment..."
-                    className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-background px-4 py-2.5 text-sm text-text placeholder-muted focus:outline-none focus:ring-2 focus:ring-[#003366] dark:focus:ring-primary focus:border-transparent shadow-sm"
-                  />
-                  <button
-                    onClick={handlePostComment}
-                    disabled={!commentInput.trim() || commentMutation.isPending}
-                    className="p-2.5 rounded-lg bg-[#003366] dark:bg-primary disabled:bg-slate-300 dark:disabled:bg-slate-600 text-white transition-colors shadow-sm hover:bg-[#002244] dark:hover:bg-primary/80"
-                  >
-                    {commentMutation.isPending ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
           )}
         </div>

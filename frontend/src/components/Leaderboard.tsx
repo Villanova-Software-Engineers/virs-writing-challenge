@@ -1,5 +1,5 @@
 import { Trophy, Flame, Clock, Calendar, Loader2, AlertCircle } from "lucide-react";
-import { useLeaderboard } from "../hooks/useApi";
+import { useLeaderboard, useActiveSemester } from "../hooks/useApi";
 import type { LeaderboardEntry } from "../types/api.types";
 
 function formatTime(totalSeconds: number): string {
@@ -114,7 +114,8 @@ function LeaderboardSkeleton() {
 }
 
 export default function Leaderboard() {
-  const { data: leaderboard, isLoading, error } = useLeaderboard();
+  const { data: semester } = useActiveSemester();
+  const { data: leaderboard, isLoading, error } = useLeaderboard(semester?.id);
 
   return (
     <div className="p-8 min-h-full bg-gray-50 dark:bg-gray-900">
