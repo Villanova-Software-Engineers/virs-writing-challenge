@@ -34,7 +34,7 @@ select {
   --secondary: #6366f1;
   --accent: #818cf8;
   --text: #0f172a;
-  --muted: #202021;
+  --muted: #94a3b8;
 }
 
 .dark {
@@ -43,7 +43,7 @@ select {
   --secondary: #6366f1;
   --accent: #a5b4fc;
   --text: #f8fafc;
-  --muted: #171819;
+  --muted: #94a3b8;
 }
 
 /* React DatePicker Styling */
