@@ -164,6 +164,7 @@ export interface WritingSession {
   started_at: string;
   ended_at: string;
   semester_id: number;
+  warning_message?: string;
 }
 
 export interface WritingSessionCreate {

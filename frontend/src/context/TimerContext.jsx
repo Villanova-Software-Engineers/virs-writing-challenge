@@ -15,6 +15,7 @@ export function TimerProvider({ children }) {
   const startTimeRef = useRef(null);
   const pausedTimeRef = useRef(0);
   const hasInitializedFromBackend = useRef(false);
+  const isResetting = useRef(false);
 
   // Backend session state - only fetch when authenticated
   const { data: sessionState } = useSessionState({
@@ -47,6 +48,9 @@ export function TimerProvider({ children }) {
 
     // Only load from backend once per login session
     if (hasInitializedFromBackend.current) return;
+
+    // Don't reload if we're in the middle of resetting
+    if (isResetting.current) return;
 
     hasInitializedFromBackend.current = true;
 
@@ -255,6 +259,7 @@ export function TimerProvider({ children }) {
   }, [isRunning, handleStop, description, updateSessionStateMutation]);
 
   const handleReset = useCallback(() => {
+    isResetting.current = true;
     setSeconds(0);
     startTimeRef.current = null;
     pausedTimeRef.current = 0;
@@ -263,7 +268,14 @@ export function TimerProvider({ children }) {
 
     // Reset backend state
     if (auth.currentUser) {
-      resetSessionStateMutation.mutate();
+      resetSessionStateMutation.mutate(undefined, {
+        onSettled: () => {
+          // Allow reinitialization after reset completes
+          isResetting.current = false;
+        }
+      });
+    } else {
+      isResetting.current = false;
     }
   }, [resetSessionStateMutation]);
 

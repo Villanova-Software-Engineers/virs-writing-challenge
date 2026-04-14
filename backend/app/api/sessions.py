@@ -41,8 +41,8 @@ async def create_session(
         )
 
     try:
-        session = create_writing_session(data, current_user.id, db, current_user.current_semester_id)
-        return session_to_response(session)
+        session, warning_message = create_writing_session(data, current_user.id, db, current_user.current_semester_id)
+        return session_to_response(session, warning_message)
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

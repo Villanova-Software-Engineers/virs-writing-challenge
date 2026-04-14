@@ -327,8 +327,8 @@ async def admin_create_session_route(
         )
 
     try:
-        session = admin_create_session(data, db)
-        return session_to_response(session)
+        session, warning_message = admin_create_session(data, db)
+        return session_to_response(session, warning_message)
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
