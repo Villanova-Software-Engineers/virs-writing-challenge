@@ -7,7 +7,7 @@ from app.models import WritingSession, Semester, SessionState
 from app.schemas.session import WritingSessionCreate, WritingSessionResponse, SessionStateResponse, SessionStateUpdate
 
 
-def session_to_response(session: WritingSession) -> WritingSessionResponse:
+def session_to_response(session: WritingSession, warning_message: Optional[str] = None) -> WritingSessionResponse:
     return WritingSessionResponse(
         id=session.id,
         duration=session.duration,
@@ -16,6 +16,7 @@ def session_to_response(session: WritingSession) -> WritingSessionResponse:
         ended_at=session.ended_at.isoformat() if session.ended_at else "",
         semester_id=session.semester_id,
         created_at=session.created_at.isoformat() if session.created_at else "",
+        warning_message=warning_message,
     )
 
 
@@ -24,7 +25,7 @@ def create_writing_session(
     user_id: int,
     db: Session,
     semester_id: Optional[int] = None
-) -> WritingSession:
+) -> Tuple[WritingSession, Optional[str]]:
     # Use provided semester_id (from user's current_semester_id) instead of querying for active semester
     # This prevents sessions from being orphaned when semesters are ended/deleted
     if semester_id is None:
@@ -34,9 +35,40 @@ def create_writing_session(
     started_at = datetime.fromisoformat(data.started_at.replace("Z", "+00:00"))
     ended_at = datetime.fromisoformat(data.ended_at.replace("Z", "+00:00"))
 
+    # Convert to EST/EDT timezone for validation
+    eastern = ZoneInfo("America/New_York")
+    started_at_est = started_at.astimezone(eastern)
+    ended_at_est = ended_at.astimezone(eastern)
+
+    # Calculate the end of day (11:59:59 PM EST) for the start date
+    end_of_start_day = started_at_est.replace(
+        hour=23,
+        minute=59,
+        second=59,
+        microsecond=999999
+    )
+
+    warning_message = None
+
+    # Check if the session spans past midnight EST
+    if ended_at_est > end_of_start_day:
+        # Cap the session at 11:59:59 PM EST
+        ended_at = end_of_start_day
+
+        # Recalculate duration based on capped end time
+        duration_seconds = int((ended_at - started_at).total_seconds())
+
+        warning_message = (
+            "Your time played over 12:00 AM EST. Because of our policy, "
+            "we auto-saved your session up to 11:59 PM EST of the day you started. "
+            "If this was a mistake, please contact the admin via the message board or email to revert the time."
+        )
+    else:
+        duration_seconds = data.duration
+
     session = WritingSession(
         user_id=user_id,
-        duration=data.duration,
+        duration=duration_seconds,
         description=data.description,
         started_at=started_at,
         ended_at=ended_at,
@@ -45,7 +77,7 @@ def create_writing_session(
     db.add(session)
     db.commit()
     db.refresh(session)
-    return session
+    return session, warning_message
 
 
 def get_user_sessions(

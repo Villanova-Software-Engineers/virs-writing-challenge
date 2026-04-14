@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc
 from typing import List, Tuple, Optional
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from app.models import User, WritingSession, Message, Comment, Semester
 from app.schemas.admin import (
     UserListItem,
@@ -138,15 +139,46 @@ def get_session_by_id(session_id: int, db: Session) -> Optional[WritingSession]:
     return db.query(WritingSession).filter(WritingSession.id == session_id).first()
 
 
-def admin_create_session(data: AdminSessionCreate, db: Session) -> WritingSession:
+def admin_create_session(data: AdminSessionCreate, db: Session) -> Tuple[WritingSession, Optional[str]]:
     semester = db.query(Semester).filter(Semester.is_active == True).first()
 
     started_at = datetime.fromisoformat(data.started_at.replace("Z", "+00:00"))
     ended_at = datetime.fromisoformat(data.ended_at.replace("Z", "+00:00"))
 
+    # Convert to EST/EDT timezone for validation
+    eastern = ZoneInfo("America/New_York")
+    started_at_est = started_at.astimezone(eastern)
+    ended_at_est = ended_at.astimezone(eastern)
+
+    # Calculate the end of day (11:59:59 PM EST) for the start date
+    end_of_start_day = started_at_est.replace(
+        hour=23,
+        minute=59,
+        second=59,
+        microsecond=999999
+    )
+
+    warning_message = None
+
+    # Check if the session spans past midnight EST
+    if ended_at_est > end_of_start_day:
+        # Cap the session at 11:59:59 PM EST
+        ended_at = end_of_start_day
+
+        # Recalculate duration based on capped end time
+        duration_seconds = int((ended_at - started_at).total_seconds())
+
+        warning_message = (
+            "Your time played over 12:00 AM EST. Because of our policy, "
+            "we auto-saved your session up to 11:59 PM EST of the day you started. "
+            "If this was a mistake, please contact the admin via the message board or email to revert the time."
+        )
+    else:
+        duration_seconds = data.duration
+
     session = WritingSession(
         user_id=data.user_id,
-        duration=data.duration,
+        duration=duration_seconds,
         description=data.description,
         started_at=started_at,
         ended_at=ended_at,
@@ -155,7 +187,7 @@ def admin_create_session(data: AdminSessionCreate, db: Session) -> WritingSessio
     db.add(session)
     db.commit()
     db.refresh(session)
-    return session
+    return session, warning_message
 
 
 def admin_update_session(session: WritingSession, data: AdminSessionUpdate, db: Session) -> WritingSession:

@@ -17,6 +17,7 @@ class WritingSessionResponse(BaseModel):
     ended_at: str
     semester_id: Optional[int] = None
     created_at: str
+    warning_message: Optional[str] = None
 
 
 class WritingSessionsListResponse(BaseModel):

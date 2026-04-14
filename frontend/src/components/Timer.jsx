@@ -16,6 +16,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
   } = useTimerContext();
 
   const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Note: We no longer limit to one session per day
   // Users can save multiple sessions throughout the day
@@ -60,6 +61,8 @@ function Timer({ onSessionSave, onTimerUpdate }) {
   };
 
   const handleSaveSession = () => {
+    if (isSaving) return; // Prevent double-clicking
+
     if (seconds === 0) {
       setError('Cannot save a session with 0 time');
       return;
@@ -73,21 +76,30 @@ function Timer({ onSessionSave, onTimerUpdate }) {
       return;
     }
 
-    if (isRunning) handleStop();
+    setIsSaving(true);
+
+    // Capture the current state before resetting
+    const currentSeconds = seconds;
+    const currentDescription = description.trim();
 
     const now = new Date();
-    const startTime = new Date(now.getTime() - seconds * 1000);
+    const startTime = new Date(now.getTime() - currentSeconds * 1000);
     const session = {
-      duration: seconds,
+      duration: currentSeconds,
       started_at: startTime.toISOString(),
       ended_at: now.toISOString(),
-      description: description.trim(),
+      description: currentDescription,
     };
 
+    // Reset immediately (this will also stop the timer if running)
     handleReset(); // clears context state + localStorage + backend state
     setError('');
 
-    if (onSessionSave) onSessionSave(session);
+    if (onSessionSave) {
+      onSessionSave(session);
+      // Reset saving state after a delay to ensure the save completes
+      setTimeout(() => setIsSaving(false), 1000);
+    }
   };
 
   const wordCount = countWords(description);
@@ -223,10 +235,11 @@ function Timer({ onSessionSave, onTimerUpdate }) {
           <div className="flex justify-center pt-2">
             <button
               onClick={handleSaveSession}
-              className="inline-flex items-center justify-center gap-2.5 px-10 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 bg-blue-600 dark:bg-blue-400 hover:opacity-90 text-white hover:scale-105"
+              disabled={isSaving || seconds === 0}
+              className="inline-flex items-center justify-center gap-2.5 px-10 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 bg-blue-600 dark:bg-blue-400 hover:opacity-90 text-white hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <Save className="h-5 w-5" />
-              Save Session
+              {isSaving ? 'Saving...' : 'Save Session'}
             </button>
           </div>
 
