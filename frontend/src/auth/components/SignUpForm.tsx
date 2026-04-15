@@ -228,7 +228,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-text mb-2">
-          Work Email
+          Email
         </label>
         <div className="relative">
           <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
