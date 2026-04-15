@@ -1,22 +1,9 @@
 import { Loader2, Archive, Calendar } from "lucide-react";
 import AdminSection from "./AdminSection";
-import { useSemesters, useDeleteSemester } from "../../hooks/useApi";
+import { useSemesters } from "../../hooks/useApi";
 
 function ArchivedSemestersPanel() {
   const { data: allSemesters, isLoading } = useSemesters();
-  const deleteSemesterMutation = useDeleteSemester();
-
-  const handleDelete = async (semester) => {
-    if (!confirm(`Are you sure you want to permanently delete "${semester.name}" and ALL associated data? This action cannot be undone.`)) {
-      return;
-    }
-
-    try {
-      await deleteSemesterMutation.mutateAsync(semester.id);
-    } catch (error) {
-      alert(error.message || "Failed to delete semester");
-    }
-  };
 
   if (isLoading) {
     return (
@@ -103,13 +90,6 @@ function ArchivedSemestersPanel() {
                         </div>
                       )}
                     </div>
-                    <button
-                      onClick={() => handleDelete(semester)}
-                      disabled={deleteSemesterMutation.isPending}
-                      className="px-3 py-1.5 rounded-lg border border-red-300 dark:border-red-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
-                    >
-                      {deleteSemesterMutation.isPending ? "Deleting..." : "Delete Permanently"}
-                    </button>
                   </div>
                 </div>
               ))}

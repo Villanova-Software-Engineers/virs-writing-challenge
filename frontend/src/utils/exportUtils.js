@@ -1,23 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-
-const formatDuration = (seconds) => {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  if (h > 0) return `${h}h ${m}m ${s}s`;
-  if (m > 0) return `${m}m ${s}s`;
-  return `${s}s`;
-};
-
-const formatTime = (isoString) => {
-  return new Date(isoString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-};
-
-const formatDate = (isoString) => {
-  return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-};
+import { formatDuration, formatTime, formatDate } from './dateTimeUtils';
 
 export const exportSessionsToPDF = (sessions, isAggregated, selectedUser, selectedSemester, totalTime) => {
   const doc = new jsPDF();

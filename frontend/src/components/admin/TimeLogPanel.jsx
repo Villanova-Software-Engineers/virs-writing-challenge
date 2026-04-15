@@ -5,6 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import AdminSection from "./AdminSection";
 import { useAdminUsers, useAdminSessions, useSemesters, useAdminCreateSession, useAdminUpdateSession, useAdminDeleteSession } from "../../hooks/useApi";
 import { exportSessionsToPDF, exportSessionsToExcel } from "../../utils/exportUtils";
+import { formatDuration, formatDurationDetailed, formatTime, formatDate, calculateDuration } from "../../utils/dateTimeUtils";
 
 function TimeLogPanel() {
   const { data: usersData, isLoading: usersLoading } = useAdminUsers();
@@ -36,37 +37,6 @@ function TimeLogPanel() {
     selectedUserId ? parseInt(selectedUserId) : undefined
   );
 
-  const formatDuration = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) return `${h}h ${m}m ${s}s`;
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
-  };
-
-  const formatDurationDetailed = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return { hours: h, minutes: m, seconds: s };
-  };
-
-  const formatTime = (isoString) => {
-    return new Date(isoString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDate = (isoString) => {
-    return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
-
-  // Calculate duration from start and end times
-  const calculateDuration = (startTime, endTime) => {
-    if (!startTime || !endTime) return 0;
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    return Math.max(0, Math.floor((end.getTime() - start.getTime()) / 1000));
-  };
 
   if (usersLoading || sessionsLoading) {
     return (

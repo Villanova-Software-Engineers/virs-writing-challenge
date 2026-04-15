@@ -2,13 +2,7 @@
 import { useLocation } from "react-router-dom";
 import { Play, Pause, LayoutDashboard } from "lucide-react";
 import { useTimerContext } from "../context/TimerContext";
-
-function formatTime(totalSeconds) {
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
+import { formatTimeDigital } from "../utils/dateTimeUtils";
 
 export default function FloatingMiniTimer() {
   const { pathname } = useLocation();
@@ -72,7 +66,7 @@ export default function FloatingMiniTimer() {
                 : "text-slate-800 dark:text-white",
             ].join(" ")}
           >
-            {formatTime(seconds)}
+            {formatTimeDigital(seconds)}
           </span>
           <span
             className={[

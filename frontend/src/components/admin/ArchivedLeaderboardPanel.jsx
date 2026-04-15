@@ -2,14 +2,10 @@ import { useState, useEffect } from "react";
 import { Loader2, Trophy, Calendar, Clock, Flame } from "lucide-react";
 import AdminSection from "./AdminSection";
 import { useSemesters, useArchivedLeaderboard } from "../../hooks/useApi";
+import { formatDurationShort } from "../../utils/dateTimeUtils";
 
 // LeaderboardRow component - same as in Leaderboard.tsx but without current user highlighting
 function LeaderboardRow({ entry }) {
-  const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    return `${hours}h ${minutes}m`;
-  };
 
   const getRankBadge = (rank) => {
     if (rank === 1) return <span className="text-2xl">🥇</span>;
@@ -56,7 +52,7 @@ function LeaderboardRow({ entry }) {
       <td className="px-6 py-4">
         <div className="flex items-center gap-2 text-text font-mono">
           <Clock size={14} className="text-muted" />
-          {formatTime(entry.total_time)}
+          {formatDurationShort(entry.total_time)}
         </div>
       </td>
     </tr>
