@@ -8,7 +8,7 @@ class Settings:
     def __init__(self):
         self.database_url: str = os.getenv("DATABASE_URL", "")
         self.firebase_cred_path: str = os.getenv("FIREBASE_CRED_PATH", "")
-        self.project_name: str = "VIRS-Writing-Challenge"
+        self.project_name: str = "ORDSS-Writing-Challenge"
         self.debug: bool = os.getenv("DEBUG", "false").lower() == "true"
 
         cors_env = os.getenv("CORS_ORIGINS", "")

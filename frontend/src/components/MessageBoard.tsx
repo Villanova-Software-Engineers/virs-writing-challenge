@@ -89,11 +89,6 @@ function CommentItem({ comment, isAdmin, onDelete }: { comment: Comment; isAdmin
                   Admin
                 </span>
               )}
-              {comment.author_department && (
-                <span className="text-[9px] text-muted bg-slate-100 dark:bg-slate-600 px-1.5 py-0.5 rounded-full border border-slate-200 dark:border-slate-500">
-                  {comment.author_department}
-                </span>
-              )}
             </div>
             <p className="text-xs text-text leading-relaxed whitespace-pre-wrap">{comment.content}</p>
             <div className="text-[10px] text-muted mt-1">{timeAgo(comment.created_at)}</div>
@@ -208,11 +203,6 @@ export function MessageCard({ msg, currentUserId, isAdmin, readOnly = false }: M
                 {msg.author_is_admin && (
                   <span className="text-[9px] text-white bg-[#003366] dark:bg-primary px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide">
                     Admin
-                  </span>
-                )}
-                {msg.author_department && (
-                  <span className="text-[10px] text-muted bg-background px-2 py-0.5 rounded-full border border-slate-300 dark:border-slate-600">
-                    {msg.author_department}
                   </span>
                 )}
               </div>

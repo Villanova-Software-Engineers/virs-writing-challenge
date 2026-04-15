@@ -89,7 +89,7 @@ function NavBar() {
       <div className="flex items-center justify-between h-16 px-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
         {isExpanded && (
           <span className="text-blue-700 dark:text-blue-400 font-bold text-xl tracking-tight">
-            VIRS
+            ORDSS
           </span>
         )}
         <button

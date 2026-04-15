@@ -41,20 +41,13 @@ def get_or_create_user(
             user.is_admin = True
             updated = True
 
-        if not user.department or user.department.strip() == "" or user.department == "Not set":
-            department, fs_first, fs_last = get_firestore_user_data(uid)
-            if department:
-                user.department = department
-                updated = True
-                print(f"[UserCRUD] Backfilled department for {uid}: {department}")
-
         if updated:
             db.commit()
             db.refresh(user)
 
         return user
 
-    department, fs_first, fs_last = get_firestore_user_data(uid)
+    fs_first, fs_last = get_firestore_user_data(uid)
     if not first_name and not last_name:
         first_name = fs_first
         last_name = fs_last
@@ -64,7 +57,6 @@ def get_or_create_user(
         email=email or "",
         first_name=first_name,
         last_name=last_name,
-        department=department,
         is_admin=is_admin_claim,
     )
     db.add(user)

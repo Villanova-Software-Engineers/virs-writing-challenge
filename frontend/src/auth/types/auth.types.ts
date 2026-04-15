@@ -5,7 +5,6 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  department: string;
   firebase_uid: string;
   isAdmin: boolean;
   emailVerified: boolean;
@@ -22,7 +21,6 @@ export interface SignUpRequest {
   lastName: string;
   email: string;
   password: string;
-  department: string;
 }
 
 export interface AuthResponse {
@@ -53,6 +51,4 @@ export interface FormErrors {
   email?: string;
   password?: string;
   confirmPassword?: string;
-  department?: string;
-  customDepartment?: string;
 }

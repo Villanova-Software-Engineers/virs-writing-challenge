@@ -14,7 +14,6 @@ class UserProfileResponse(BaseModel):
     email: Optional[str] = None
     first_name: str
     last_name: str
-    department: str
     is_admin: bool = False
     current_semester: Optional[SemesterInfo] = None
     created_at: Optional[str] = None
@@ -23,7 +22,6 @@ class UserProfileResponse(BaseModel):
 class UserProfileUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    department: Optional[str] = None
 
 
 class UserStats(BaseModel):

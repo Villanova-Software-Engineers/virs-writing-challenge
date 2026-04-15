@@ -13,28 +13,24 @@ def verify_firebase_token(token: str) -> Tuple[str, Optional[str], Optional[str]
     )
 
 
-def get_firestore_user_data(uid: str) -> Tuple[str, str, str]:
-    """Fetch user data from Firestore, returns (department, first_name, last_name)"""
+def get_firestore_user_data(uid: str) -> Tuple[str, str]:
+    """Fetch user data from Firestore, returns (first_name, last_name)"""
     try:
         firestore_db = firestore.client()
         user_doc = firestore_db.collection('users').document(uid).get()
 
         if not user_doc.exists:
-            return "", "", ""
+            return "", ""
 
         user_data = user_doc.to_dict()
         if not user_data:
-            return "", "", ""
-
-        department = user_data.get('department', '').strip()
-        if not department or department == "Not set":
-            department = ""
+            return "", ""
 
         first_name = user_data.get('firstName', '').strip()
         last_name = user_data.get('lastName', '').strip()
 
-        return department, first_name, last_name
+        return first_name, last_name
 
     except Exception as e:
         print(f"[FirebaseAuth] Failed to fetch Firestore data for {uid}: {e}")
-        return "", "", ""
+        return "", ""

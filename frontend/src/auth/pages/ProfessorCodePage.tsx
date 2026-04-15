@@ -87,7 +87,7 @@ const ProfessorCodePage: React.FC = () => {
 
         <div className="relative z-10 max-w-xl">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/15 dark:bg-white/10 backdrop-blur-sm px-4 py-2.5 text-[16px] font-semibold text-white shadow-lg border border-white/20 dark:border-white/10">
-            <span>VIRS Writing Challenge</span>
+            <span>ORDSS Writing Challenge</span>
           </div>
 
           <h1 className="mt-8 text-[clamp(38px,4.5vw,52px)] leading-[1.1] font-black text-white">

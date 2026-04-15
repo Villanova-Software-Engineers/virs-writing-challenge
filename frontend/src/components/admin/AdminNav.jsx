@@ -76,7 +76,7 @@ function AdminNav({ activeId, onSelect }) {
       {/* Logo / Brand */}
       <div className="flex items-center h-14 px-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
         <span className="text-blue-700 dark:text-blue-400 font-bold text-lg whitespace-nowrap">
-          VIRS Admin
+          ORDSS Admin
         </span>
       </div>
 

@@ -5,7 +5,7 @@ function Home() {
       <section className="flex-1 flex flex-col items-center justify-center py-16 px-4">
         {/* Title */}
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-text mb-8 text-center">
-          VIRS Writing Challenge
+          ORDSS Writing Challenge
         </h1>
 
         {/* TODO: Add a caption/tagline here in the future */}

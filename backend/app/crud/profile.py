@@ -39,7 +39,6 @@ def get_user_profile(db: Session, user_id: int, uid: str, email: Optional[str], 
             email=email,
             first_name="",
             last_name="",
-            department="",
             is_admin=is_admin,
             current_semester=None,
             created_at=None,
@@ -60,7 +59,6 @@ def get_user_profile(db: Session, user_id: int, uid: str, email: Optional[str], 
         email=user.email,
         first_name=user.first_name or "",
         last_name=user.last_name or "",
-        department=user.department or "",
         is_admin=user.is_admin,
         current_semester=current_semester_info,
         created_at=user.created_at.isoformat() if user.created_at else None,
@@ -85,7 +83,6 @@ def update_user_profile(
             email=email or "",
             first_name=data.first_name or "",
             last_name=data.last_name or "",
-            department=data.department or "",
         )
         db.add(user)
     else:
@@ -93,8 +90,6 @@ def update_user_profile(
             user.first_name = data.first_name
         if data.last_name is not None:
             user.last_name = data.last_name
-        if data.department is not None:
-            user.department = data.department
 
     db.commit()
     db.refresh(user)
@@ -106,7 +101,6 @@ def update_user_profile(
         email=user.email,
         first_name=user.first_name or "",
         last_name=user.last_name or "",
-        department=user.department or "",
         is_admin=user.is_admin,
         current_semester=current_semester_info,
         created_at=user.created_at.isoformat() if user.created_at else None,

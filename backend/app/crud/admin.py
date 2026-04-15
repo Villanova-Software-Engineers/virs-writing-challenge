@@ -21,7 +21,6 @@ def user_to_list_item(user: User) -> UserListItem:
         email=user.email or "",
         first_name=user.first_name or "",
         last_name=user.last_name or "",
-        department=user.department or "",
         is_admin=user.is_admin,
         created_at=user.created_at.isoformat() if user.created_at else None,
     )
@@ -49,8 +48,6 @@ def update_user_info(user: User, data: UpdateUserRequest, db: Session) -> User:
         user.first_name = data.first_name
     if data.last_name is not None:
         user.last_name = data.last_name
-    if data.department is not None:
-        user.department = data.department
 
     db.commit()
     db.refresh(user)

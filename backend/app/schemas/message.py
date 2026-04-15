@@ -18,7 +18,6 @@ class CommentResponse(BaseModel):
     id: str
     author_uid: str
     author_name: str
-    author_department: str
     author_is_admin: bool
     content: str
     created_at: str
@@ -28,7 +27,6 @@ class MessageResponse(BaseModel):
     id: str
     content: str
     author_name: str
-    author_department: str
     author_is_admin: bool
     author_uid: str
     created_at: str

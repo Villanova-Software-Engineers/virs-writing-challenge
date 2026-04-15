@@ -6,7 +6,6 @@ import {
   useProfileStats,
   useProfileHistory,
 } from "../hooks/useApi";
-import { DEPARTMENTS } from "../constants/departments";
 
 function formatMinutes(seconds: number): string {
   const totalMinutes = Math.floor(seconds / 60);
@@ -46,7 +45,6 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
-    department: "",
   });
 
   const { data: profile, isLoading: profileLoading, error: profileError } = useProfile();
@@ -60,7 +58,6 @@ export default function Profile() {
       setFormData({
         first_name: profile.first_name,
         last_name: profile.last_name,
-        department: profile.department,
       });
     }
   }, [profile]);
@@ -81,7 +78,6 @@ export default function Profile() {
       setFormData({
         first_name: profile.first_name,
         last_name: profile.last_name,
-        department: profile.department,
       });
     }
     setEditing(false);
@@ -184,32 +180,6 @@ export default function Profile() {
                     editing ? "border-primary bg-white dark:bg-slate-700" : "border-transparent bg-slate-50 dark:bg-slate-700"
                   } text-text focus:outline-none focus:ring-2 focus:ring-primary transition`}
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm text-muted mb-1">Department</label>
-                {editing ? (
-                  <select
-                    name="department"
-                    value={formData.department}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-primary bg-white dark:bg-slate-700 text-text focus:outline-none focus:ring-2 focus:ring-primary transition"
-                  >
-                    <option value="">Select department</option>
-                    {DEPARTMENTS.map((dept) => (
-                      <option key={dept} value={dept}>
-                        {dept}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    name="department"
-                    value={formData.department || "Not set"}
-                    disabled
-                    className="w-full px-3 py-2 rounded-lg border border-transparent bg-slate-50 dark:bg-slate-700 text-text"
-                  />
-                )}
               </div>
 
               {profile?.email && (

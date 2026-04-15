@@ -70,7 +70,7 @@ function AdminManagementPanel() {
                   <tr>
                     <th className="px-4 py-3 text-left font-semibold">Name</th>
                     <th className="px-4 py-3 text-left font-semibold">Email</th>
-                    <th className="px-4 py-3 text-left font-semibold">Department</th>
+                    <th className="px-4 py-3 text-left font-semibold">Joined</th>
                     <th className="px-4 py-3 text-right font-semibold">Action</th>
                   </tr>
                 </thead>
@@ -81,7 +81,9 @@ function AdminManagementPanel() {
                         {user.first_name} {user.last_name}
                       </td>
                       <td className="px-4 py-3 text-muted">{user.email}</td>
-                      <td className="px-4 py-3 text-muted text-sm">{user.department || "—"}</td>
+                      <td className="px-4 py-3 text-muted">
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end">
                           <button
@@ -116,7 +118,7 @@ function AdminManagementPanel() {
                   <tr>
                     <th className="px-4 py-3 text-left font-semibold">Name</th>
                     <th className="px-4 py-3 text-left font-semibold">Email</th>
-                    <th className="px-4 py-3 text-left font-semibold">Department</th>
+                    <th className="px-4 py-3 text-left font-semibold">Joined</th>
                     <th className="px-4 py-3 text-right font-semibold">Action</th>
                   </tr>
                 </thead>
@@ -127,7 +129,9 @@ function AdminManagementPanel() {
                         {user.first_name} {user.last_name}
                       </td>
                       <td className="px-4 py-3 text-muted">{user.email}</td>
-                      <td className="px-4 py-3 text-muted text-sm">{user.department || "—"}</td>
+                      <td className="px-4 py-3 text-muted">
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end">
                           <button

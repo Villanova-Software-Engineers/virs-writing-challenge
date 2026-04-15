@@ -42,7 +42,6 @@ export interface Message {
   content: string;
   category: MessageCategory;
   author_name: string;
-  author_department: string;
   author_is_admin: boolean;
   author_uid: string;
   created_at: string;
@@ -62,7 +61,6 @@ export interface MessageResponse {
   content: string;
   category: MessageCategory;
   author_name: string;
-  author_department: string;
   author_is_admin: boolean;
   author_uid: string;
   created_at: string;
@@ -76,7 +74,6 @@ export interface Comment {
   id: string;
   author_uid: string;
   author_name: string;
-  author_department: string;
   author_is_admin: boolean;
   content: string;
   created_at: string;
@@ -122,7 +119,6 @@ export interface UserProfile {
   email: string;
   first_name: string;
   last_name: string;
-  department: string;
   is_admin: boolean;
   current_semester: SemesterInfo | null;
   created_at: string;
@@ -131,7 +127,6 @@ export interface UserProfile {
 export interface UserProfileUpdate {
   first_name?: string;
   last_name?: string;
-  department?: string;
 }
 
 export interface UserStats {

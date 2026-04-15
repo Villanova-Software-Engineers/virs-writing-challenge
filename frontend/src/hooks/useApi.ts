@@ -536,7 +536,6 @@ interface AdminUserListResponse {
     email: string;
     first_name: string;
     last_name: string;
-    department: string;
     is_admin: boolean;
     created_at: string | null;
   }>;
@@ -572,13 +571,13 @@ export function useSetUserAdmin(
 }
 
 export function useUpdateUser(
-  options?: UseMutationOptions<any, Error, { userId: number; firstName: string; lastName: string; department: string }>
+  options?: UseMutationOptions<any, Error, { userId: number; firstName: string; lastName: string }>
 ) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ userId, firstName, lastName, department }) =>
-      api.patch(`/api/admin/users/${userId}`, { first_name: firstName, last_name: lastName, department }),
+    mutationFn: ({ userId, firstName, lastName }) =>
+      api.patch(`/api/admin/users/${userId}`, { first_name: firstName, last_name: lastName }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
     },

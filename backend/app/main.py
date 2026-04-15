@@ -46,4 +46,4 @@ app.include_router(admin_router, prefix="/api")
 
 @app.get("/")
 async def read_root():
-    return {"message": "VIRS Writing Challenge API is running!"}
+    return {"message": "ORDSS Writing Challenge API is running!"}

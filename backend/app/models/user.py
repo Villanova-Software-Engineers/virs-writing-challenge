@@ -12,7 +12,6 @@ class User(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     first_name = Column(String, default="")
     last_name = Column(String, default="")
-    department = Column(String, default="")
     is_admin = Column(Boolean, default=False)
     current_semester_id = Column(Integer, ForeignKey("semesters.id", ondelete="SET NULL"), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

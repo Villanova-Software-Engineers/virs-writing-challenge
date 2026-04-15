@@ -8,7 +8,6 @@ class UserListItem(BaseModel):
     email: str
     first_name: str
     last_name: str
-    department: str
     is_admin: bool
     created_at: Optional[str] = None
 
@@ -25,7 +24,6 @@ class SetAdminRequest(BaseModel):
 class UpdateUserRequest(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    department: Optional[str] = None
 
 
 class AdminWritingSessionResponse(BaseModel):

@@ -20,7 +20,7 @@ function AdminNavBar() {
       {/* Logo / Brand */}
       <div className="flex items-center h-14 px-4 border-b border-slate-200 dark:border-slate-700">
         <span className="text-slate-900 dark:text-white font-bold text-lg whitespace-nowrap">
-          VIRS Admin
+          ORDSS Admin
         </span>
       </div>
 

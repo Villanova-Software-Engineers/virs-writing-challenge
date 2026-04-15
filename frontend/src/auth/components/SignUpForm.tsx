@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaShieldAlt, FaBuilding, FaCheckCircle } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaShieldAlt, FaCheckCircle } from 'react-icons/fa';
 import { useFormValidation } from '../hooks/useFormValidation';
 import { AuthService } from '../services/auth.service';
-import { DEPARTMENTS } from "../../constants/departments";
 import type { FormErrors } from '../types/auth.types';
 
 interface SignUpFormProps {
@@ -20,8 +19,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
     email: '',
     password: '',
     confirmPassword: '',
-    department: '',
-    customDepartment: '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -45,15 +42,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
     return '';
   };
 
-  const validateDepartment = (): string => {
-    if (!formData.department) return 'Please select a department';
-    if (formData.department === 'Other' && !formData.customDepartment.trim()) {
-      return 'Please enter your department';
-    }
-    return '';
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
     if (id === 'password') {
@@ -67,7 +56,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
     }
   };
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     let error = '';
 
@@ -86,14 +75,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
         break;
       case 'confirmPassword':
         error = validateConfirmPassword(formData.password, value);
-        break;
-      case 'department':
-        error = validateDepartment();
-        break;
-      case 'customDepartment':
-        if (formData.department === 'Other') {
-          error = value.trim() ? '' : 'Please enter your department';
-        }
         break;
     }
 
@@ -118,7 +99,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
     newErrors.email = validateEmail(formData.email);
     newErrors.password = validatePassword(formData.password);
     newErrors.confirmPassword = validateConfirmPassword(formData.password, formData.confirmPassword);
-    newErrors.department = validateDepartment();
 
     Object.keys(newErrors).forEach(key => {
       if (!newErrors[key as keyof FormErrors]) {
@@ -141,16 +121,11 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
     setErrors({});
 
     try {
-      const finalDepartment = formData.department === 'Other'
-        ? formData.customDepartment.trim()
-        : formData.department;
-
       const response = await AuthService.signUp({
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.trim(),
         password: formData.password,
-        department: finalDepartment,
       });
 
       setSentToEmail(formData.email.trim());
@@ -274,61 +249,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
         </div>
         {errors.email && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
       </div>
-
-      <div>
-        <label htmlFor="department" className="block text-sm font-medium text-text mb-2">
-          Department
-        </label>
-        <div className="relative">
-          <FaBuilding className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
-          <select
-            id="department"
-            value={formData.department}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            disabled={isLoading}
-            className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-text focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 ${
-              errors.department
-                ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-600'
-                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-            }`}
-          >
-            <option value="">Select a department</option>
-            {DEPARTMENTS.map((dept) => (
-              <option key={dept} value={dept}>
-                {dept}
-              </option>
-            ))}
-          </select>
-        </div>
-        {errors.department && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.department}</p>}
-      </div>
-
-      {formData.department === 'Other' && (
-        <div>
-          <label htmlFor="customDepartment" className="block text-sm font-medium text-text mb-2">
-            Enter your department
-          </label>
-          <div className="relative">
-            <FaBuilding className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted transition-colors duration-200" size={20} />
-            <input
-              id="customDepartment"
-              type="text"
-              placeholder="e.g., Research & Development"
-              value={formData.customDepartment}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              disabled={isLoading}
-              className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-background text-text focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 ${
-                errors.customDepartment
-                  ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-600'
-                  : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-              }`}
-            />
-          </div>
-          {errors.customDepartment && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.customDepartment}</p>}
-        </div>
-      )}
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-text mb-2">

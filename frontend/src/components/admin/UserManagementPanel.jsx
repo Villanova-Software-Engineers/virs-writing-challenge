@@ -9,20 +9,19 @@ function UserManagementPanel() {
   const deleteUserMutation = useDeleteUser();
 
   const [editingUser, setEditingUser] = useState(null);
-  const [editForm, setEditForm] = useState({ firstName: "", lastName: "", department: "" });
+  const [editForm, setEditForm] = useState({ firstName: "", lastName: "" });
 
   const handleEdit = (user) => {
     setEditingUser(user);
     setEditForm({
       firstName: user.first_name,
       lastName: user.last_name,
-      department: user.department,
     });
   };
 
   const handleCancelEdit = () => {
     setEditingUser(null);
-    setEditForm({ firstName: "", lastName: "", department: "" });
+    setEditForm({ firstName: "", lastName: "" });
   };
 
   const handleSaveEdit = async (userId) => {
@@ -31,7 +30,6 @@ function UserManagementPanel() {
         userId,
         firstName: editForm.firstName.trim(),
         lastName: editForm.lastName.trim(),
-        department: editForm.department.trim(),
       });
       handleCancelEdit();
     } catch (error) {
@@ -82,7 +80,7 @@ function UserManagementPanel() {
               <tr>
                 <th className="px-4 py-3 text-left font-semibold">Name</th>
                 <th className="px-4 py-3 text-left font-semibold">Email</th>
-                <th className="px-4 py-3 text-left font-semibold">Department</th>
+                <th className="px-4 py-3 text-left font-semibold">Joined</th>
                 <th className="px-4 py-3 text-right font-semibold">Actions</th>
               </tr>
             </thead>
@@ -117,14 +115,8 @@ function UserManagementPanel() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-muted text-sm">{user.email}</td>
-                      <td className="px-4 py-3">
-                        <input
-                          type="text"
-                          value={editForm.department}
-                          onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
-                          placeholder="Department"
-                          className="w-full rounded border border-accent/40 px-2 py-1 text-sm"
-                        />
+                      <td className="px-4 py-3 text-muted text-sm">
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-2 justify-end">
@@ -150,7 +142,9 @@ function UserManagementPanel() {
                         {user.first_name} {user.last_name}
                       </td>
                       <td className="px-4 py-3 text-muted">{user.email}</td>
-                      <td className="px-4 py-3 text-muted text-sm">{user.department || "—"}</td>
+                      <td className="px-4 py-3 text-muted">
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-2 justify-end">
                           <button

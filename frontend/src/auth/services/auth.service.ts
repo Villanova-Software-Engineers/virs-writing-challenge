@@ -30,7 +30,6 @@ export class AuthService {
       email: firebaseUser.email || '',
       firstName,
       lastName,
-      department: 'Not set',
       firebase_uid: firebaseUser.uid,
       isAdmin: false,
       emailVerified: firebaseUser.emailVerified,
@@ -82,7 +81,7 @@ export class AuthService {
   // Sign up - POST /users
   static async signUp(userData: SignUpRequest): Promise<AuthResponse> {
     await authReady;
-    const { email, password, firstName, lastName, department } = userData;
+    const { email, password, firstName, lastName } = userData;
 
     // Create Firebase auth user — this is the critical step.
     // Once this succeeds the account exists and we can show success immediately.
@@ -94,7 +93,6 @@ export class AuthService {
       email: firebaseUser.email!,
       firstName,
       lastName,
-      department,
       firebase_uid: firebaseUser.uid,
       isAdmin: false,
       emailVerified: false,
@@ -152,7 +150,6 @@ export class AuthService {
       email: data.email,
       firstName: data.firstName,
       lastName: data.lastName,
-      department: data.department,
       firebase_uid: data.firebase_uid,
       isAdmin: data.isAdmin || false,
       emailVerified: data.emailVerified || false,

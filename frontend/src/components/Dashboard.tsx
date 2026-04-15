@@ -60,11 +60,6 @@ function MiniMessageCard({ msg }: { msg: MessageResponse }) {
                   Admin
                 </span>
               )}
-              {msg.author_department && (
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-900/40 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-600">
-                  {msg.author_department}
-                </span>
-              )}
               <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-white/60 dark:bg-slate-900/40 px-2 py-0.5 rounded-full">
                 {timeAgo(msg.created_at)}
               </span>
