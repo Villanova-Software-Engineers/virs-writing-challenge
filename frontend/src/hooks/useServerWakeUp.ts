@@ -14,7 +14,6 @@ export function useServerWakeUp() {
     let checkInterval: NodeJS.Timeout;
 
     const wakeUpServer = async () => {
-      console.log('[ServerWakeUp] Initiating server wake-up check...');
 
       // Initial check
       const initialStatus = await checkServerStatus();
@@ -22,14 +21,12 @@ export function useServerWakeUp() {
       if (!isMounted) return;
 
       if (initialStatus.isAvailable) {
-        console.log('[ServerWakeUp] Server is already available');
         setIsReady(true);
         setShowStartingScreen(false);
         return;
       }
 
       // Server not ready - show starting screen immediately
-      console.log('[ServerWakeUp] Server not ready, showing startup screen');
       setShowStartingScreen(true);
 
       // Keep checking every 1 second until server is ready
@@ -42,12 +39,9 @@ export function useServerWakeUp() {
         }
 
         if (status.isAvailable) {
-          console.log('[ServerWakeUp] Server is now available!');
           setIsReady(true);
           setShowStartingScreen(false);
           clearInterval(checkInterval);
-        } else {
-          console.log('[ServerWakeUp] Still waiting for server...');
         }
       }, 1000); // Check every 1 second
     };

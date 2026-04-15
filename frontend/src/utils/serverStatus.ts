@@ -25,7 +25,6 @@ export async function checkServerStatus(): Promise<ServerStatusResult> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    console.log(`[ServerStatus] Checking ${BACKEND_URL}${HEALTH_CHECK_ENDPOINT}`);
     const response = await fetch(`${BACKEND_URL}${HEALTH_CHECK_ENDPOINT}`, {
       method: 'GET',
       signal: controller.signal,
@@ -35,18 +34,14 @@ export async function checkServerStatus(): Promise<ServerStatusResult> {
     });
 
     clearTimeout(timeoutId);
-    console.log(`[ServerStatus] Response status: ${response.status}, ok: ${response.ok}`);
 
     if (response.ok) {
-      console.log('[ServerStatus] Server is available');
       return { isAvailable: true, isStarting: false };
     }
 
     // Server responded but not healthy
-    console.log('[ServerStatus] Server responded but not healthy');
     return { isAvailable: false, isStarting: true };
   } catch (error: any) {
-    console.log('[ServerStatus] Error checking server status:', error);
     // Network errors typically indicate server is starting/unavailable
     if (error.name === 'AbortError') {
       return { isAvailable: false, isStarting: true, error: 'Request timeout' };
