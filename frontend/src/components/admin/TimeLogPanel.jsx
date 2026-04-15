@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, Clock, FileDown, Plus, Edit2, Trash2, X, Check, Calendar } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import AdminSection from "./AdminSection";
 import { useAdminUsers, useAdminSessions, useSemesters, useAdminCreateSession, useAdminUpdateSession, useAdminDeleteSession } from "../../hooks/useApi";
 import { exportSessionsToPDF, exportSessionsToExcel } from "../../utils/exportUtils";
+import { formatDuration, formatDurationDetailed, formatTime, formatDate, calculateDuration } from "../../utils/dateTimeUtils";
 
 function TimeLogPanel() {
   const { data: usersData, isLoading: usersLoading } = useAdminUsers();
@@ -18,44 +19,24 @@ function TimeLogPanel() {
   const updateSessionMutation = useAdminUpdateSession();
   const deleteSessionMutation = useAdminDeleteSession();
 
+  const { data: semestersData } = useSemesters();
+
+  // Default to active semester when data loads
+  useEffect(() => {
+    if (semestersData && semestersData.length > 0 && selectedSemesterId === "") {
+      const activeSemester = semestersData.find(s => s.is_active);
+      if (activeSemester) {
+        setSelectedSemesterId(String(activeSemester.id));
+      }
+    }
+  }, [semestersData, selectedSemesterId]);
+
   const { data: sessionsData, isLoading: sessionsLoading } = useAdminSessions(
     100,
     selectedSemesterId ? parseInt(selectedSemesterId) : undefined,
     selectedUserId ? parseInt(selectedUserId) : undefined
   );
-  const { data: semestersData } = useSemesters();
 
-  const formatDuration = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) return `${h}h ${m}m ${s}s`;
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
-  };
-
-  const formatDurationDetailed = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return { hours: h, minutes: m, seconds: s };
-  };
-
-  const formatTime = (isoString) => {
-    return new Date(isoString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDate = (isoString) => {
-    return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
-
-  // Calculate duration from start and end times
-  const calculateDuration = (startTime, endTime) => {
-    if (!startTime || !endTime) return 0;
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    return Math.max(0, Math.floor((end.getTime() - start.getTime()) / 1000));
-  };
 
   if (usersLoading || sessionsLoading) {
     return (

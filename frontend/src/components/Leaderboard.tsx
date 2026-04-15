@@ -1,15 +1,7 @@
 import { Trophy, Flame, Clock, Calendar, Loader2, AlertCircle } from "lucide-react";
 import { useLeaderboard, useActiveSemester } from "../hooks/useApi";
 import type { LeaderboardEntry } from "../types/api.types";
-
-function formatTime(totalSeconds: number): string {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-  return `${minutes}m`;
-}
+import { formatDurationShort } from "../utils/dateTimeUtils";
 
 function getRankStyle(rank: number): string {
   switch (rank) {
@@ -83,7 +75,7 @@ function LeaderboardRow({ entry }: LeaderboardRowProps) {
       <td className="px-6 py-4">
         <div className="flex items-center gap-2 text-text font-mono">
           <Clock size={14} className="text-muted" />
-          {formatTime(entry.total_time)}
+          {formatDurationShort(entry.total_time)}
         </div>
       </td>
     </tr>

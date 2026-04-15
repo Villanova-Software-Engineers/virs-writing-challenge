@@ -9,32 +9,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { useSessions, useActiveSemester } from "../hooks/useApi";
-
-export default function Sessions() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const sessionsPerPage = 10;
-
-  const { data: semester } = useActiveSemester();
-  const { data: sessionsData, isLoading } = useSessions(1000, semester?.id);
-
-  const formatDuration = (seconds: number): string => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) return `${h}h ${m}m ${s}s`;
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
-  };
-
-  const formatDurationShort = (seconds: number): string => {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  if (h > 0) return `${h}h ${m}m`;
-  if (m > 0 && s > 0) return `${m}m ${s}s`;
-  if (m > 0) return `${m}m`;
-  return `${s}s`;
-};
+import { formatDuration, formatDurationShort, formatTime } from "../utils/dateTimeUtils";
 
   const formatDate = (isoString: string): string => {
     const date = new Date(isoString);
@@ -46,14 +21,12 @@ export default function Sessions() {
     });
   };
 
-  const formatTime = (isoString: string): string => {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
+export default function Sessions() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const sessionsPerPage = 10;
+
+  const { data: semester } = useActiveSemester();
+  const { data: sessionsData, isLoading } = useSessions(1000, semester?.id);
 
   const allSessions = sessionsData?.sessions ?? [];
   const totalPages = Math.ceil(allSessions.length / sessionsPerPage);

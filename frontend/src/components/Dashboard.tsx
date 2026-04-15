@@ -25,20 +25,13 @@ import {
   useLikeMessage,
 } from "../hooks/useApi";
 import type { MessageResponse } from "../types/api.types";
+import { timeAgoShort, formatDurationShort, formatDate as formatDateUtil, formatTimeDigital } from "../utils/dateTimeUtils";
 
 // ── Mini Message Card ─────────────────────────────────────────────────────────
 function MiniMessageCard({ msg }: { msg: MessageResponse }) {
   const currentUserId = auth.currentUser?.uid || "";
   const hasLiked = msg.likes.includes(currentUserId);
   const likeMutation = useLikeMessage();
-
-  const timeAgo = (isoString: string): string => {
-    const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
-    if (diff < 60) return "just now";
-    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-    return `${Math.floor(diff / 86400)}d`;
-  };
 
   // Check if message is truncated (roughly more than 2 lines)
   const isTruncated = msg.content.length > 100 || msg.content.includes('\n');
@@ -61,7 +54,7 @@ function MiniMessageCard({ msg }: { msg: MessageResponse }) {
                 </span>
               )}
               <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-white/60 dark:bg-slate-900/40 px-2 py-0.5 rounded-full">
-                {timeAgo(msg.created_at)}
+                {timeAgoShort(msg.created_at)}
               </span>
             </div>
             <p className="text-slate-700 dark:text-slate-200 line-clamp-2 whitespace-pre-wrap leading-relaxed">{msg.content}</p>
@@ -156,22 +149,6 @@ function RecentSessionsDropdown() {
   const { data: semester } = useActiveSemester();
   const { data: sessionsData, isLoading } = useSessions(5, semester?.id);
 
-  const formatDuration = (seconds: number): string => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) return `${h}h ${m}m`;
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
-  };
-
-  const formatDate = (isoString: string): string => {
-    const date = new Date(isoString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -232,11 +209,11 @@ function RecentSessionsDropdown() {
                     <div className="flex items-center gap-2">
                       <Calendar size={12} className="text-slate-400" />
                       <span className="text-xs text-slate-500">
-                        {formatDate(session.started_at)}
+                        {formatDateUtil(session.started_at).replace(/,.*/, '')}
                       </span>
                     </div>
                     <span className="font-semibold text-xs text-primary">
-                      {formatDuration(session.duration)}
+                      {formatDurationShort(session.duration)}
                     </span>
                   </div>
                   {session.description && (
@@ -259,7 +236,7 @@ function RecentSessionsDropdown() {
               <div className="flex justify-between text-xs">
                 <span className="text-slate-500">Semester Total</span>
                 <span className="font-bold text-primary">
-                  {formatDuration(sessionsData.total_time)}
+                  {formatDurationShort(sessionsData.total_time)}
                 </span>
               </div>
             </div>
@@ -323,14 +300,6 @@ export default function Dashboard() {
     [updateStreak, saveSession]
   );
 
-  const formatTime = (totalSeconds: number): string => {
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(
-      s
-    ).padStart(2, "0")}`;
-  };
 
   const streakCount = streak?.count ?? 0;
   const flameColor =
@@ -384,7 +353,7 @@ export default function Dashboard() {
               Today's Time
             </div>
             <div className="text-3xl font-bold text-text font-mono">
-              {formatTime(todayWritingTime)}
+              {formatTimeDigital(todayWritingTime)}
             </div>
           </div>
 
@@ -394,7 +363,7 @@ export default function Dashboard() {
               Semester Total
             </div>
             <div className="text-3xl font-bold text-primary font-mono">
-              {allSessionsData ? formatTime(allSessionsData.total_time) : "00:00:00"}
+              {allSessionsData ? formatTimeDigital(allSessionsData.total_time) : "00:00:00"}
             </div>
           </div>
         </div>

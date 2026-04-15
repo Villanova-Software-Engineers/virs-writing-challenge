@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, MessageSquare, Calendar } from "lucide-react";
 import AdminSection from "./AdminSection";
 import { useSemesters, useArchivedMessages } from "../../hooks/useApi";
@@ -11,6 +11,16 @@ function ArchivedMessagesPanel() {
 
   const semesters = allSemesters || [];
   const selectedSemester = semesters.find(s => s.id === selectedSemesterId);
+
+  // Default to active semester when data loads
+  useEffect(() => {
+    if (semesters.length > 0 && selectedSemesterId === null) {
+      const activeSemester = semesters.find(s => s.is_active);
+      if (activeSemester) {
+        setSelectedSemesterId(activeSemester.id);
+      }
+    }
+  }, [semesters, selectedSemesterId]);
 
   // Sort messages: pinned first, then by date
   const messages = (messagesData?.messages ?? []).sort((a, b) => {

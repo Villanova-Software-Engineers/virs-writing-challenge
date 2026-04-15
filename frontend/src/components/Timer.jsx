@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Save } from 'lucide-react';
 import WarningPopup from './WarningPopup';
 import { useTimerContext } from '../context/TimerContext';
+import { formatTimeDigital } from '../utils/dateTimeUtils';
 
 function Timer({ onSessionSave, onTimerUpdate }) {
   const {
@@ -40,12 +41,6 @@ function Timer({ onSessionSave, onTimerUpdate }) {
     if (onTimerUpdate) onTimerUpdate(seconds);
   }, [seconds, onTimerUpdate]);
 
-  const formatTime = (totalSeconds) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
 
   const countWords = (text) =>
     text.trim().split(/\s+/).filter((w) => w.length > 0).length;
@@ -157,7 +152,7 @@ function Timer({ onSessionSave, onTimerUpdate }) {
               />
             </svg>
             <div className="relative text-4xl font-black tabular-nums leading-none tracking-tight bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 dark:from-blue-400 dark:via-blue-400 dark:to-blue-400 bg-clip-text text-transparent sm:text-5xl px-20">
-              {formatTime(seconds)}
+              {formatTimeDigital(seconds)}
             </div>
           </div>
 
