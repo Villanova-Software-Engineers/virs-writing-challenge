@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, Request, status
-from sqlalchemy.orm import Session
+from fastapi import Response
 from sqlalchemy.exc import IntegrityError
+from app.api.deps import (
+    APIRouter, Depends, HTTPException, Request, status,
+    Session, limiter, get_db, get_current_user, require_admin,
+)
 from app.schemas import SemesterCreate, SemesterResponse, SemesterUpdate, SemesterJoin
 from app.crud import create_semester, get_active_semester, end_semester, get_semester, delete_semester, get_semesters
-from app.core import get_db, limiter
-from app.api.auth import get_current_user, require_admin
 
 router = APIRouter(prefix="/semesters", tags=["Semesters"])
 

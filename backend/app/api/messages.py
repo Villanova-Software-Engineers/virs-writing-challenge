@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy.orm import Session
-from typing import Optional
-from app.api.auth import require_semester_registration
-from app.schemas.auth import CurrentUser
-from app.core import limiter
-from app.core.database import get_db
+from app.api.deps import (
+    APIRouter, Depends, HTTPException, Request, status,
+    Session, Optional, limiter, get_db,
+    CurrentUser, require_semester_registration,
+)
 from app.models import User
 from app.schemas.message import (
     MessageCreate,

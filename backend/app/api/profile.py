@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, Request
-from sqlalchemy.orm import Session
-from app.api.auth import get_current_user, require_semester_registration
-from app.schemas.auth import CurrentUser
-from app.core import limiter
-from app.core.database import get_db
+from app.api.deps import (
+    APIRouter, Depends, Request, Session,
+    limiter, get_db, CurrentUser,
+    get_current_user, require_semester_registration,
+)
 from app.schemas.profile import UserProfileResponse, UserProfileUpdate, UserStats, UserStatsHistory
 from app.crud.profile import get_user_profile, update_user_profile, get_user_stats, get_user_stats_history
 

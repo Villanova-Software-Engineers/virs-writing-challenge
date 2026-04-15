@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Depends, Request
-from sqlalchemy.orm import Session
-from app.api.auth import require_semester_registration
-from app.schemas.auth import CurrentUser
-from app.core import limiter
-from app.core.database import get_db
+from app.api.deps import (
+    APIRouter, Depends, Request, Session,
+    limiter, get_db, CurrentUser, require_semester_registration,
+)
 from app.schemas.streak import StreakResponse
 from app.crud.streak import get_user_streak, update_user_streak, streak_to_response
 
